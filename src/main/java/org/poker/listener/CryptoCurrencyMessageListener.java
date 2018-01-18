@@ -19,7 +19,9 @@ import org.knowm.xchange.coinmarketcap.dto.marketdata.CoinMarketCapTicker;
 import org.knowm.xchange.coinmarketcap.service.CoinMarketCapMarketDataService;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.marketdata.Ticker;
-import org.knowm.xchange.service.marketdata.MarketDataService;
+import org.knowm.xchange.gdax.GDAXExchange;
+import org.knowm.xchange.gdax.dto.marketdata.GDAXProductTicker;
+import org.knowm.xchange.gdax.service.GDAXMarketDataService;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -33,16 +35,14 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
   private List<Exchange> exchanges = new ArrayList<>();
   private static final DecimalFormat decimalFormat = new DecimalFormat("#,###.00");;
   private BinanceExchange binanceExchange;
+  private GDAXExchange gdaxExchange;
 
   public CryptoCurrencyMessageListener() {
     ExchangeSpecification coinMarketCapExchangeSpecification = new CoinMarketCapExchange().getDefaultExchangeSpecification();
     exchanges.add(ExchangeFactory.INSTANCE.createExchange(coinMarketCapExchangeSpecification));
     ExchangeSpecification binanceExchangeSpecification = new BinanceExchange().getDefaultExchangeSpecification();
     binanceExchange = (BinanceExchange)ExchangeFactory.INSTANCE.createExchange(binanceExchangeSpecification);
-  }
-
-  public CryptoCurrencyMessageListener(Exchange ... exchanges) {
-
+    gdaxExchange = (GDAXExchange)ExchangeFactory.INSTANCE.createExchange(new GDAXExchange().getDefaultExchangeSpecification());
   }
 
   public void onEvent(SlackMessagePosted event, SlackSession session) {
@@ -66,6 +66,37 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         }
       }
     }
+  }
+
+  private SlackAttachment formatAttachment(String baseCurrencyCode, CoinMarketCapTicker ticker) {
+    SlackAttachment attachment = new SlackAttachment();
+    attachment.setFallback(formatMessage(ticker));
+    attachment.setColor(getColor(ticker));
+    attachment.setThumbUrl("https://files.coinmarketcap.com/static/img/coins/128x128/" + ticker.getID() + ".png");
+    String overview = String.format("Cap: %s\nVolume: %s",
+        "$" + ICUHumanize.compactDecimal(ticker.getMarketCapUSD()),
+        ICUHumanize.compactDecimal(ticker.getVolume24hUSD()));
+    attachment.addField("Binance", formatBinancePrices(baseCurrencyCode), true);
+    if (shouldIncludeCoinbase(baseCurrencyCode)) {
+      attachment.addField("GDAX", formatCoinbasePrices(baseCurrencyCode), true);
+    }
+    return attachment;
+  }
+
+  private String formatMessage(CoinMarketCapTicker ticker) {
+    BigDecimal usdPrice = ticker.getPriceUSD();
+    BigDecimal percentChange24Hour = ticker.getPctChange24h();
+    String currencyCode = ticker.getBaseCurrency().getCurrency().getCurrencyCode();
+    boolean isZeroOrPositive = percentChange24Hour.compareTo(BigDecimal.ZERO) >= 0;
+    String strMessage = String.format("%s (%s): $%s (%s%s%%) | Cap: %s | Vol: %s",
+        ticker.getName(),
+        currencyCode,
+        decimalFormat.format(usdPrice),
+        isZeroOrPositive ? "+" : "",
+        decimalFormat.format(percentChange24Hour),
+        "$" + ICUHumanize.compactDecimal(ticker.getMarketCapUSD()),
+        ICUHumanize.compactDecimal(ticker.getVolume24hUSD()));
+    return strMessage;
   }
 
   private String getCurrencyCodeFromMessage(String message) {
@@ -98,27 +129,46 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
     return null;
   }
 
-  private SlackAttachment formatAttachment(String baseCurrencyCode, CoinMarketCapTicker ticker) {
-    BigDecimal usdPrice = ticker.getPriceUSD();
-    BigDecimal percentChange24Hour = ticker.getPctChange24h();
-    String currencyCode = ticker.getBaseCurrency().getCurrency().getCurrencyCode();
-    SlackAttachment attachment = new SlackAttachment();
-    boolean isZeroOrPositive = percentChange24Hour.compareTo(BigDecimal.ZERO) >= 0;
-    String strMessage = String.format("%s (%s): $%s (%s%s%%)",
-        ticker.getName(),
-        currencyCode,
-        decimalFormat.format(usdPrice),
-        isZeroOrPositive ? "+" : "",
-        decimalFormat.format(percentChange24Hour));
-    attachment.setFallback(strMessage);
-    attachment.setColor(getColor(ticker));
-    attachment.setThumbUrl("https://files.coinmarketcap.com/static/img/coins/128x128/" + ticker.getID() + ".png");
-    String overview = String.format("Cap: %s\nVolume: %s",
-        "$" + ICUHumanize.compactDecimal(ticker.getMarketCapUSD()),
-        ICUHumanize.compactDecimal(ticker.getVolume24hUSD()));
-    attachment.addField("Overview", overview, true);
-    attachment.addField("Binance", formatBinancePrices(baseCurrencyCode), true);
-    return attachment;
+  private boolean shouldIncludeCoinbase(String baseCurrencyCode) {
+    switch (baseCurrencyCode.toLowerCase()) {
+      case "eth":
+      case "btc":
+      case "ltc":
+      case "bch":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  private GDAXProductTicker getGdaxTicker(String baseCurrencyCode, String counterCurrencyCode) {
+    GDAXMarketDataService marketDataService = (GDAXMarketDataService)gdaxExchange.getMarketDataService();
+    CurrencyPair cp = getCurrencyPairForExchange(gdaxExchange, baseCurrencyCode, counterCurrencyCode);
+    if (cp == null) {
+      return null;
+    }
+    try {
+      return marketDataService.getGDAXProductTicker(cp);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private String formatCoinbasePrices(String baseCurrencyCode) {
+    GDAXProductTicker usdtTicker = getGdaxTicker(baseCurrencyCode, "USD");
+    GDAXProductTicker btcTicker = getGdaxTicker(baseCurrencyCode, "BTC");
+    GDAXProductTicker ethTicker = getGdaxTicker(baseCurrencyCode, "ETH");
+    List<String> results = new ArrayList<>();
+    if (usdtTicker != null) {
+      results.add("$" + decimalFormat.format(usdtTicker.getPrice()));
+    }
+    if (btcTicker != null) {
+      results.add("\u20BF" + btcTicker.getPrice().toPlainString());
+    }
+    if (ethTicker != null) {
+      results.add("Ξ" + ethTicker.getPrice().toPlainString());
+    }
+    return results.stream().collect(Collectors.joining("\n"));
   }
 
   private String formatBinancePrices(String baseCurrencyCode) {
