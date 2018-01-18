@@ -6,6 +6,7 @@ import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.SlackUser;
 import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
+import humanize.ICUHumanize;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.ExchangeSpecification;
@@ -112,10 +113,9 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
     attachment.setFallback(strMessage);
     attachment.setColor(getColor(ticker));
     attachment.setThumbUrl("https://files.coinmarketcap.com/static/img/coins/128x128/" + ticker.getID() + ".png");
-    //attachment.setTitle(currencyCode);
     String overview = String.format("Cap: %s\nVolume: %s",
-        "$" + decimalFormat.format(ticker.getMarketCapUSD()),
-        decimalFormat.format(ticker.getVolume24hUSD()));
+        "$" + ICUHumanize.compactDecimal(ticker.getMarketCapUSD()),
+        ICUHumanize.compactDecimal(ticker.getVolume24hUSD()));
     attachment.addField("Overview", overview, true);
     attachment.addField("Binance", formatBinancePrices(baseCurrencyCode), true);
     return attachment;

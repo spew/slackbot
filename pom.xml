@@ -10,6 +10,7 @@
 
   <properties>
     <commons-configuration2.version>2.2</commons-configuration2.version>
+    <humanize-icu.version>1.2.2</humanize-icu.version>
     <jackson.version>2.8.7</jackson.version>
     <java.version>1.8</java.version>
     <junit.version>4.11</junit.version>
@@ -26,11 +27,15 @@
       <version>${commons-configuration2.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.github.mfornos</groupId>
+      <artifactId>humanize-icu</artifactId>
+      <version>${humanize-icu.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>${jackson.version}</version>
     </dependency>
-
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-yaml</artifactId>
