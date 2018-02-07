@@ -7,6 +7,7 @@ import com.ullink.slack.simpleslackapi.impl.SlackSessionFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.poker.listener.CryptoCurrencyMessageListener;
+import org.poker.listener.StockQuoteMessageListener;
 
 import java.io.IOException;
 
@@ -24,6 +25,7 @@ public class SlackBotApplication {
       logger.error("Not a member of channel", channelName);
     }
     session.addMessagePostedListener(new CryptoCurrencyMessageListener());
+    session.addMessagePostedListener(new StockQuoteMessageListener());
     while (apiToken.equals(apiToken)) {
       Thread.sleep(1000);
     }

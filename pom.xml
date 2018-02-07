@@ -18,6 +18,7 @@
     <simpleslackapi.version>1.2.0</simpleslackapi.version>
     <slf4j.version>1.7.7</slf4j.version>
     <xchange.version>4.3.2</xchange.version>
+    <yahoofinance.version>3.12.3</yahoofinance.version>
   </properties>
 
   <dependencies>
@@ -95,6 +96,11 @@
       <groupId>org.knowm.xchange</groupId>
       <artifactId>xchange-coinmarketcap</artifactId>
       <version>${xchange.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.yahoofinance-api</groupId>
+      <artifactId>YahooFinanceAPI</artifactId>
+      <version>${yahoofinance.version}</version>
     </dependency>
   </dependencies>
 
