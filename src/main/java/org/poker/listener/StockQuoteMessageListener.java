@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.text.DecimalFormat;
+import java.util.Calendar;
 
 public class StockQuoteMessageListener implements SlackMessagePostedListener {
   private static final DecimalFormat decimalFormat = new DecimalFormat("#,###.00");;
@@ -40,6 +41,7 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
       throw new RuntimeException(e);
     }
   }
+
 
   private String getCurrencyCodeFromMessage(String message) {
     return message.substring(1);
