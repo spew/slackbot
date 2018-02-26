@@ -47,4 +47,18 @@ public class StockQuoteMessageListenerTeset {
     assertEquals(1, actualAttachment.getFields().size());
     assertEquals("Berkshire Hathaway Inc.", actualAttachment.getFields().get(0).getTitle());
   }
+
+  @Test
+  public void djiTicker() {
+    StockQuoteMessageListener listener = new StockQuoteMessageListener();
+    SlackMessagePosted event = mock(SlackMessagePosted.class);
+    when(event.getMessageContent()).thenReturn("$^dji");
+    SlackSession session = mock(SlackSession.class);
+    listener.onEvent(event, session);
+    ArgumentCaptor<SlackAttachment> argumentCaptor = ArgumentCaptor.forClass(SlackAttachment.class);
+    verify(session, times(1)).sendMessage(any(), any(String.class), argumentCaptor.capture());
+    SlackAttachment actualAttachment = argumentCaptor.getValue();
+    assertEquals(1, actualAttachment.getFields().size());
+    assertEquals("Dow Jones Industrial Average", actualAttachment.getFields().get(0).getTitle());
+  }
 }
