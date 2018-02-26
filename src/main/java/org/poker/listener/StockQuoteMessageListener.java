@@ -44,7 +44,7 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
 
 
   private String getCurrencyCodeFromMessage(String message) {
-    return message.substring(1);
+    return message.substring(1).replace('.', '-');
   }
 
   private SlackAttachment formatAttachment(Stock stock, StockQuote quote) {
