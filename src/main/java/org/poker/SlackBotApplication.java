@@ -11,6 +11,7 @@ import org.poker.listener.ChannelAwareMessageListener;
 import org.poker.listener.CryptoCurrencyMessageListener;
 import org.poker.listener.StockQuoteMessageListener;
 import org.poker.listener.strategy.IgnoreChannelsStrategy;
+import org.poker.stock.YahooFinanceStockResolver;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public class SlackBotApplication {
   private List<SlackMessagePostedListener> createListeners() {
     List<SlackMessagePostedListener> listeners = new ArrayList<>();
     listeners.add(new CryptoCurrencyMessageListener());
-    listeners.add(new StockQuoteMessageListener());
+    listeners.add(new StockQuoteMessageListener(new YahooFinanceStockResolver()));
     Stage stage = applicationConfiguration.getStage();
     switch(stage) {
       case Production:

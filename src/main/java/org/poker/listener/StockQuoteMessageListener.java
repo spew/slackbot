@@ -6,6 +6,7 @@ import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
 import humanize.ICUHumanize;
+import org.poker.stock.YahooFinanceStockResolver;
 import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
 import yahoofinance.quotes.stock.StockQuote;
@@ -17,9 +18,11 @@ import java.text.DecimalFormat;
 import java.util.Calendar;
 
 public class StockQuoteMessageListener implements SlackMessagePostedListener {
-  private static final DecimalFormat decimalFormat = new DecimalFormat("#,###.00");;
+  private static final DecimalFormat decimalFormat = new DecimalFormat("#,###.00");
+  private final YahooFinanceStockResolver stockResolver;
 
-  public StockQuoteMessageListener() {
+  public StockQuoteMessageListener(YahooFinanceStockResolver stockResolver) {
+    this.stockResolver = stockResolver;
   }
 
   public void onEvent(SlackMessagePosted event, SlackSession session) {
@@ -27,28 +30,13 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
     if (!message.startsWith("$") || message.length() > 10) {
       return;
     }
-    String coin = getCurrencyCodeFromMessage(message);
     SlackChannel channel = event.getChannel();
-
-    try {
-      Stock stock = YahooFinance.get(coin);
-      if (stock.isValid()) {
-        StockQuote quote = stock.getQuote();
-        SlackAttachment attachment = formatAttachment(stock, quote);
-        session.sendMessage(channel, attachment.getFallback(), attachment);
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    Stock stock = stockResolver.resolve(message.substring(1));
+    if (stock.isValid()) {
+      StockQuote quote = stock.getQuote();
+      SlackAttachment attachment = formatAttachment(stock, quote);
+      session.sendMessage(channel, attachment.getFallback(), attachment);
     }
-  }
-
-
-  private String getCurrencyCodeFromMessage(String message) {
-    String ticker = message.substring(1);
-    if (ticker.startsWith(".")) {
-      ticker = "^" + ticker.substring(1);
-    }
-    return ticker.replace('.', '-');
   }
 
   private SlackAttachment formatAttachment(Stock stock, StockQuote quote) {
