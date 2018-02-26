@@ -5,6 +5,7 @@ import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.poker.stock.YahooFinanceStockResolver;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -12,7 +13,7 @@ import static org.mockito.Mockito.*;
 public class StockQuoteMessageListenerTeset {
   @Test
   public void longMessagesShouldBeIgnored() {
-    StockQuoteMessageListener listener = new StockQuoteMessageListener();
+    StockQuoteMessageListener listener = new StockQuoteMessageListener(new YahooFinanceStockResolver());
     SlackMessagePosted event = mock(SlackMessagePosted.class);
     when(event.getMessageContent()).thenReturn("$thisisreallylongandshouldbeignored");
     SlackSession session = mock(SlackSession.class);
@@ -22,7 +23,7 @@ public class StockQuoteMessageListenerTeset {
 
   @Test
   public void amznTicker() {
-    StockQuoteMessageListener listener = new StockQuoteMessageListener();
+    StockQuoteMessageListener listener = new StockQuoteMessageListener(new YahooFinanceStockResolver());
     SlackMessagePosted event = mock(SlackMessagePosted.class);
     when(event.getMessageContent()).thenReturn("$amzn");
     SlackSession session = mock(SlackSession.class);
@@ -36,7 +37,7 @@ public class StockQuoteMessageListenerTeset {
 
   @Test
   public void brkTicker() {
-    StockQuoteMessageListener listener = new StockQuoteMessageListener();
+    StockQuoteMessageListener listener = new StockQuoteMessageListener(new YahooFinanceStockResolver());
     SlackMessagePosted event = mock(SlackMessagePosted.class);
     when(event.getMessageContent()).thenReturn("$brk.a");
     SlackSession session = mock(SlackSession.class);
@@ -50,7 +51,7 @@ public class StockQuoteMessageListenerTeset {
 
   @Test
   public void djiTicker() {
-    StockQuoteMessageListener listener = new StockQuoteMessageListener();
+    StockQuoteMessageListener listener = new StockQuoteMessageListener(new YahooFinanceStockResolver());
     SlackMessagePosted event = mock(SlackMessagePosted.class);
     when(event.getMessageContent()).thenReturn("$^dji");
     SlackSession session = mock(SlackSession.class);
