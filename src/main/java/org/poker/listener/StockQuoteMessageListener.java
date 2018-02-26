@@ -44,7 +44,11 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
 
 
   private String getCurrencyCodeFromMessage(String message) {
-    return message.substring(1).replace('.', '-');
+    String ticker = message.substring(1);
+    if (ticker.startsWith(".")) {
+      ticker = "^" + ticker.substring(1);
+    }
+    return ticker.replace('.', '-');
   }
 
   private SlackAttachment formatAttachment(Stock stock, StockQuote quote) {
@@ -61,14 +65,20 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
     BigDecimal usdPrice = quote.getPrice();
     BigDecimal percentChange24Hour = quote.getChangeInPercent();
     boolean isZeroOrPositive = percentChange24Hour.compareTo(BigDecimal.ZERO) >= 0;
-    String strMessage = String.format("$%s %s%s (%s%%) | Cap: %s | Vol: %s",
-            decimalFormat.format(usdPrice),
-            isZeroOrPositive ? "+" : "",
-            decimalFormat.format(quote.getChange()),
-            decimalFormat.format(percentChange24Hour),
-            "$" + ICUHumanize.compactDecimal(stock.getStats().getMarketCap()),
-            ICUHumanize.compactDecimal(quote.getVolume()));
-    return strMessage;
+    StringBuilder sb = new StringBuilder();
+    sb.append(String.format("$%s %s%s (%s%%)",
+        decimalFormat.format(usdPrice),
+        isZeroOrPositive ? "+" : "",
+        decimalFormat.format(quote.getChange()),
+        decimalFormat.format(percentChange24Hour)));
+    if (stock.getStats().getMarketCap() != null) {
+      sb.append(" | Cap: ");
+      sb.append("$");
+      sb.append(ICUHumanize.compactDecimal(stock.getStats().getMarketCap()));
+    }
+    sb.append(" | Vol: ");
+    sb.append(ICUHumanize.compactDecimal(quote.getVolume()));
+    return sb.toString();
   }
 
   private String getColor(BigDecimal percentChange24Hour) {
