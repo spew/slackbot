@@ -1,7 +1,5 @@
 package org.poker;
 
-
-import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.impl.SlackSessionFactory;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
@@ -29,16 +27,15 @@ public class SlackBotApplication {
         new SlackApiTokenValidator().validate(apiToken);
         SlackSession session = SlackSessionFactory.createWebSocketSlackSession(apiToken);
         session.connect();
-        String channelName = "bot";
-        SlackChannel channel = session.findChannelByName("general");
-        if (!channel.isMember()) {
-            logger.error("Not a member of channel", channelName);
-        }
         addMessagePostedListeners(session);
-        while (apiToken.equals(apiToken)) {
+        runLoop();
+        session.disconnect();
+    }
+
+    private void runLoop() throws InterruptedException {
+        while (true) {
             Thread.sleep(1000);
         }
-        session.disconnect();
     }
 
     private void addMessagePostedListeners(SlackSession slackSession) {
