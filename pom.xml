@@ -95,7 +95,7 @@
     </dependency>
     <dependency>
       <groupId>org.knowm.xchange</groupId>
-      <artifactId>xchange-examples</artifactId>
+      <artifactId>xchange-gdax</artifactId>
       <version>${xchange.version}</version>
     </dependency>
     <dependency>
