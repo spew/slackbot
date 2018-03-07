@@ -9,14 +9,12 @@ import org.poker.listener.ChannelAwareMessageListener;
 import org.poker.listener.CryptoCurrencyMessageListener;
 import org.poker.listener.StockQuoteMessageListener;
 import org.poker.listener.strategy.ChannelListeningStrategy;
-import org.poker.listener.strategy.IgnoreChannelsStrategy;
-import org.poker.listener.strategy.OnlyListenToSpecificChannelsStrategy;
+import org.poker.listener.strategy.ChannelListeningStrategyFactory;
 import org.poker.slack.SlackApiTokenValidator;
 import org.poker.stock.YahooFinanceStockResolver;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,16 +23,26 @@ public class SlackBotApplication {
     private ApplicationConfiguration applicationConfiguration = new ApplicationConfiguration();
 
     public void run() throws IOException, InterruptedException {
+        SlackSession session = connect();
+        addMessagePostedListeners(session);
+        runLoop();
+    }
+
+    private SlackSession connect() throws IOException {
         String apiToken = applicationConfiguration.getSlackApiToken();
         new SlackApiTokenValidator().validate(apiToken);
         SlackSession session = SlackSessionFactory.createWebSocketSlackSession(apiToken);
         session.connect();
-        addMessagePostedListeners(session);
-        try {
-            runLoop();
-        } finally {
-            session.disconnect();
-        }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Executing slack shutdown hook.");
+            try {
+                session.disconnect();
+                logger.info("Disconnected from slack.");
+            } catch (Exception e) {
+                logger.error("Error disconnecting from slack session", e);
+            }
+        }));
+        return session;
     }
 
     private void runLoop() throws InterruptedException {
@@ -54,18 +62,7 @@ public class SlackBotApplication {
         listeners.add(new CryptoCurrencyMessageListener());
         listeners.add(new StockQuoteMessageListener(new YahooFinanceStockResolver()));
         Stage stage = applicationConfiguration.getStage();
-        ChannelListeningStrategy channelListeningStrategy = getChannelListeningStrategy(stage);
+        ChannelListeningStrategy channelListeningStrategy = ChannelListeningStrategyFactory.newDefault(stage);
         return listeners.stream().map(l -> new ChannelAwareMessageListener(l, channelListeningStrategy)).collect(Collectors.toList());
-    }
-
-    private ChannelListeningStrategy getChannelListeningStrategy(Stage stage) {
-        String mainChannel = "general";
-        switch (stage) {
-            case Production:
-                return new OnlyListenToSpecificChannelsStrategy(Arrays.asList(mainChannel));
-            case Gamma:
-            default:
-                return new IgnoreChannelsStrategy(Arrays.asList(mainChannel));
-        }
     }
 }
