@@ -6,18 +6,18 @@ import yahoofinance.YahooFinance;
 import java.io.IOException;
 
 public class YahooFinanceStockResolver {
-  public Stock resolve(String ticker) {
-    try {
-      return YahooFinance.get(sanitizeTicker(ticker));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    public Stock resolve(String ticker) {
+        try {
+            return YahooFinance.get(sanitizeTicker(ticker));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
-  }
 
-  private String sanitizeTicker(String ticker) {
-    if (ticker.startsWith(".")) {
-      ticker = "^" + ticker.substring(1);
+    private String sanitizeTicker(String ticker) {
+        if (ticker.startsWith(".")) {
+            ticker = "^" + ticker.substring(1);
+        }
+        return ticker.replace('.', '-');
     }
-    return ticker.replace('.', '-');
-  }
 }

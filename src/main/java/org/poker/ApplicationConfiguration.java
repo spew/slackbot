@@ -11,33 +11,33 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ApplicationConfiguration {
-  private static final Logger logger = LogManager.getLogger(ApplicationConfiguration.class);
-  private final Configuration configuration;
+    private static final Logger logger = LogManager.getLogger(ApplicationConfiguration.class);
+    private final Configuration configuration;
 
-  public ApplicationConfiguration() {
-    CombinedConfiguration combinedConfiguration = new CombinedConfiguration();
-    combinedConfiguration.addConfiguration(new EnvironmentConfiguration());
-    this.configuration = combinedConfiguration;
-  }
-
-  public String getSlackApiToken() {
-    return configuration.getString("SLACK_API_TOKEN");
-  }
-
-  public List<String> getChannelNames() {
-    List<String> defaultChannels = Arrays.asList(new String[] { "general" });
-    return configuration.getList(String.class, "CHANNEL_NAMES", defaultChannels);
-  }
-
-  public Stage getStage() {
-    String value = configuration.getString("STAGE");
-    if (value == null) {
-      return Stage.Gamma;
+    public ApplicationConfiguration() {
+        CombinedConfiguration combinedConfiguration = new CombinedConfiguration();
+        combinedConfiguration.addConfiguration(new EnvironmentConfiguration());
+        this.configuration = combinedConfiguration;
     }
-    Stage stage = Enums.getIfPresent(Stage.class, value).orNull();
-    if (stage == null) {
-      return Stage.Gamma;
+
+    public String getSlackApiToken() {
+        return configuration.getString("SLACK_API_TOKEN");
     }
-    return stage;
-  }
+
+    public List<String> getChannelNames() {
+        List<String> defaultChannels = Arrays.asList(new String[]{"general"});
+        return configuration.getList(String.class, "CHANNEL_NAMES", defaultChannels);
+    }
+
+    public Stage getStage() {
+        String value = configuration.getString("STAGE");
+        if (value == null) {
+            return Stage.Gamma;
+        }
+        Stage stage = Enums.getIfPresent(Stage.class, value).orNull();
+        if (stage == null) {
+            return Stage.Gamma;
+        }
+        return stage;
+    }
 }
