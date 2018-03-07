@@ -1,7 +1,7 @@
 package org.poker.listener.strategy;
 
-import org.poker.ApplicationConfiguration;
-import org.poker.Stage;
+import org.poker.config.ApplicationConfiguration;
+import org.poker.config.Stage;
 
 import java.util.Arrays;
 

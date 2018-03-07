@@ -2,6 +2,8 @@ package org.poker;
 
 
 import org.junit.Test;
+import org.poker.config.ApplicationConfiguration;
+import org.poker.config.Stage;
 
 import static org.junit.Assert.assertEquals;
 
