@@ -4,5 +4,5 @@ import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 
 public interface ChannelListeningStrategy {
-  boolean shouldHandleEvent(SlackMessagePosted event, SlackSession session);
+    boolean shouldHandleEvent(SlackMessagePosted event, SlackSession session);
 }

@@ -6,28 +6,29 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertFalse;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class IgnoreChannelsStrategyTest {
 
-  @Test
-  public void ignoreGeneral() {
-    IgnoreChannelsStrategy strategy = new IgnoreChannelsStrategy(Arrays.asList("general"));
-    assertFalse(strategy.shouldHandleEvent(mockEvent("general"), null));
-  }
+    @Test
+    public void ignoreGeneral() {
+        IgnoreChannelsStrategy strategy = new IgnoreChannelsStrategy(Arrays.asList("general"));
+        assertFalse(strategy.shouldHandleEvent(mockEvent("general"), null));
+    }
 
-  @Test
-  public void acceptBot() {
-    IgnoreChannelsStrategy strategy = new IgnoreChannelsStrategy(Arrays.asList("bot"));
-    assertFalse(strategy.shouldHandleEvent(mockEvent("bot"), null));
-  }
+    @Test
+    public void acceptBot() {
+        IgnoreChannelsStrategy strategy = new IgnoreChannelsStrategy(Arrays.asList("bot"));
+        assertFalse(strategy.shouldHandleEvent(mockEvent("bot"), null));
+    }
 
-  private SlackMessagePosted mockEvent(String channelName) {
-    SlackChannel channel = mock(SlackChannel.class);
-    when(channel.getName()).thenReturn(channelName);
-    SlackMessagePosted messagePosted = mock(SlackMessagePosted.class);
-    when(messagePosted.getChannel()).thenReturn(channel);
-    return messagePosted;
-  }
+    private SlackMessagePosted mockEvent(String channelName) {
+        SlackChannel channel = mock(SlackChannel.class);
+        when(channel.getName()).thenReturn(channelName);
+        SlackMessagePosted messagePosted = mock(SlackMessagePosted.class);
+        when(messagePosted.getChannel()).thenReturn(channel);
+        return messagePosted;
+    }
 }
