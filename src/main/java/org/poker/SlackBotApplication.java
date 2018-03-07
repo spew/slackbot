@@ -11,6 +11,7 @@ import org.poker.listener.ChannelAwareMessageListener;
 import org.poker.listener.CryptoCurrencyMessageListener;
 import org.poker.listener.StockQuoteMessageListener;
 import org.poker.listener.strategy.IgnoreChannelsStrategy;
+import org.poker.slack.SlackApiTokenValidator;
 import org.poker.stock.YahooFinanceStockResolver;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ public class SlackBotApplication {
 
     public void run() throws IOException, InterruptedException {
         String apiToken = applicationConfiguration.getSlackApiToken();
+        new SlackApiTokenValidator().validate(apiToken);
         SlackSession session = SlackSessionFactory.createWebSocketSlackSession(apiToken);
         session.connect();
         String channelName = "bot";
