@@ -3,6 +3,7 @@ package org.poker;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.poker.config.ApplicationConfiguration;
 import org.poker.listener.DefaultListenerAdder;
 import org.poker.slack.SlackSessionProvider;
 

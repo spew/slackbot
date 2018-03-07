@@ -1,7 +1,7 @@
 package org.poker.listener.strategy;
 
 import org.junit.Test;
-import org.poker.Stage;
+import org.poker.config.Stage;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;

@@ -2,8 +2,8 @@ package org.poker.listener;
 
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
-import org.poker.ApplicationConfiguration;
-import org.poker.Stage;
+import org.poker.config.ApplicationConfiguration;
+import org.poker.config.Stage;
 import org.poker.listener.strategy.ChannelListeningStrategy;
 import org.poker.listener.strategy.ChannelListeningStrategyFactory;
 import org.poker.stock.YahooFinanceStockResolver;

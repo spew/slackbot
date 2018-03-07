@@ -1,4 +1,4 @@
-package org.poker;
+package org.poker.config;
 
 public enum Stage {
     Gamma,

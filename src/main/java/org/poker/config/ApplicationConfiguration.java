@@ -1,4 +1,4 @@
-package org.poker;
+package org.poker.config;
 
 import com.google.common.base.Enums;
 import org.apache.commons.configuration2.CombinedConfiguration;
