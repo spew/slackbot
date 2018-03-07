@@ -8,7 +8,9 @@ import org.apache.logging.log4j.Logger;
 import org.poker.listener.ChannelAwareMessageListener;
 import org.poker.listener.CryptoCurrencyMessageListener;
 import org.poker.listener.StockQuoteMessageListener;
+import org.poker.listener.strategy.ChannelListeningStrategy;
 import org.poker.listener.strategy.IgnoreChannelsStrategy;
+import org.poker.listener.strategy.OnlyListenToSpecificChannelsStrategy;
 import org.poker.slack.SlackApiTokenValidator;
 import org.poker.stock.YahooFinanceStockResolver;
 
@@ -28,8 +30,11 @@ public class SlackBotApplication {
         SlackSession session = SlackSessionFactory.createWebSocketSlackSession(apiToken);
         session.connect();
         addMessagePostedListeners(session);
-        runLoop();
-        session.disconnect();
+        try {
+            runLoop();
+        } finally {
+            session.disconnect();
+        }
     }
 
     private void runLoop() throws InterruptedException {
@@ -49,13 +54,18 @@ public class SlackBotApplication {
         listeners.add(new CryptoCurrencyMessageListener());
         listeners.add(new StockQuoteMessageListener(new YahooFinanceStockResolver()));
         Stage stage = applicationConfiguration.getStage();
+        ChannelListeningStrategy channelListeningStrategy = getChannelListeningStrategy(stage);
+        return listeners.stream().map(l -> new ChannelAwareMessageListener(l, channelListeningStrategy)).collect(Collectors.toList());
+    }
+
+    private ChannelListeningStrategy getChannelListeningStrategy(Stage stage) {
+        String mainChannel = "general";
         switch (stage) {
             case Production:
-                return listeners;
+                return new OnlyListenToSpecificChannelsStrategy(Arrays.asList(mainChannel));
             case Gamma:
             default:
-                IgnoreChannelsStrategy strategy = new IgnoreChannelsStrategy(Arrays.asList("general"));
-                return listeners.stream().map(l -> new ChannelAwareMessageListener(l, strategy)).collect(Collectors.toList());
+                return new IgnoreChannelsStrategy(Arrays.asList(mainChannel));
         }
     }
 }

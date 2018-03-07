@@ -7,15 +7,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class IgnoreChannelsStrategy implements ChannelListeningStrategy {
+public class OnlyListenToSpecificChannelsStrategy implements ChannelListeningStrategy {
     private final Set<String> channelNames = new HashSet<>();
 
-    public IgnoreChannelsStrategy(Collection<String> channelNames) {
+    public OnlyListenToSpecificChannelsStrategy(Collection<String> channelNames) {
         this.channelNames.addAll(channelNames);
     }
 
     @Override
     public boolean shouldHandleEvent(SlackMessagePosted event, SlackSession session) {
-        return !channelNames.contains(event.getChannel().getName());
+        return channelNames.contains(event.getChannel().getName());
     }
 }
