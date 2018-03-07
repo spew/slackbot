@@ -21,7 +21,7 @@ public class ApplicationConfiguration {
     }
 
     public String getSlackApiToken() {
-        return configuration.getString("SLACK_API_TOKEN");
+        return configuration.getString("SLACK_API_TOKEN", null);
     }
 
     public List<String> getChannelNames() {
