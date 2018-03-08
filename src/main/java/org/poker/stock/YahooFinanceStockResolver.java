@@ -15,6 +15,9 @@ public class YahooFinanceStockResolver {
     }
 
     private String sanitizeTicker(String ticker) {
+        if (ticker.equalsIgnoreCase("pcln")) {
+            ticker = "bkng";
+        }
         if (ticker.startsWith(".")) {
             ticker = "^" + ticker.substring(1);
         }
