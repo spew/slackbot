@@ -16,6 +16,6 @@ public class OnlyListenToSpecificChannelsStrategy implements ChannelListeningStr
 
     @Override
     public boolean shouldHandleEvent(SlackMessagePosted event, SlackSession session) {
-        return channelNames.contains(event.getChannel().getName());
+        return event.getChannel().isDirect() || channelNames.contains(event.getChannel().getName());
     }
 }

@@ -25,11 +25,26 @@ public class OnlyListenToSpecificChannelsStrategyTest {
         assertFalse(strategy.shouldHandleEvent(mockEvent("bot"), null));
     }
 
+    @Test
+    public void acceptDM() {
+        OnlyListenToSpecificChannelsStrategy strategy = new OnlyListenToSpecificChannelsStrategy(Arrays.asList("general"));
+        assertTrue(strategy.shouldHandleEvent(mockDMEvent("ABCDEFG"), null));
+    }
+
     private SlackMessagePosted mockEvent(String channelName) {
         SlackChannel channel = mock(SlackChannel.class);
         when(channel.getName()).thenReturn(channelName);
         SlackMessagePosted messagePosted = mock(SlackMessagePosted.class);
         when(messagePosted.getChannel()).thenReturn(channel);
+        return messagePosted;
+    }
+
+    private SlackMessagePosted mockDMEvent(String channelName) {
+        SlackChannel channel = mock(SlackChannel.class);
+        when(channel.getName()).thenReturn(channelName);
+        SlackMessagePosted messagePosted = mock(SlackMessagePosted.class);
+        when(messagePosted.getChannel()).thenReturn(channel);
+        when(channel.isDirect()).thenReturn(true);
         return messagePosted;
     }
 }
