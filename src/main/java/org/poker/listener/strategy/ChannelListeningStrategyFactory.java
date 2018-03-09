@@ -15,10 +15,10 @@ public class ChannelListeningStrategyFactory {
     public static ChannelListeningStrategy newDefault(Stage stage) {
         switch (stage) {
             case Production:
-                return new OnlyListenToSpecificChannelsStrategy(Arrays.asList(MAIN_CHANNEL));
+                return new SpecificChannelsAndDMsListeningStrategy(Arrays.asList(MAIN_CHANNEL));
             case Gamma:
             default:
-                return new IgnoreChannelsStrategy(Arrays.asList(MAIN_CHANNEL));
+                return new IgnoreChannelsListeningStrategy(Arrays.asList(MAIN_CHANNEL));
         }
     }
 

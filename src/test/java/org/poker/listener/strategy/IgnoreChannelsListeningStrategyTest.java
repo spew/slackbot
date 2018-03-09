@@ -10,17 +10,17 @@ import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class IgnoreChannelsStrategyTest {
+public class IgnoreChannelsListeningStrategyTest {
 
     @Test
     public void ignoreGeneral() {
-        IgnoreChannelsStrategy strategy = new IgnoreChannelsStrategy(Arrays.asList("general"));
+        IgnoreChannelsListeningStrategy strategy = new IgnoreChannelsListeningStrategy(Arrays.asList("general"));
         assertFalse(strategy.shouldHandleEvent(mockEvent("general"), null));
     }
 
     @Test
     public void acceptBot() {
-        IgnoreChannelsStrategy strategy = new IgnoreChannelsStrategy(Arrays.asList("bot"));
+        IgnoreChannelsListeningStrategy strategy = new IgnoreChannelsListeningStrategy(Arrays.asList("bot"));
         assertFalse(strategy.shouldHandleEvent(mockEvent("bot"), null));
     }
 

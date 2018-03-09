@@ -7,10 +7,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class OnlyListenToSpecificChannelsStrategy implements ChannelListeningStrategy {
+public class SpecificChannelsAndDMsListeningStrategy implements ChannelListeningStrategy {
     private final Set<String> channelNames = new HashSet<>();
 
-    public OnlyListenToSpecificChannelsStrategy(Collection<String> channelNames) {
+    public SpecificChannelsAndDMsListeningStrategy(Collection<String> channelNames) {
         this.channelNames.addAll(channelNames);
     }
 
