@@ -7,10 +7,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class IgnoreChannelsStrategy implements ChannelListeningStrategy {
+public class IgnoreChannelsListeningStrategy implements ChannelListeningStrategy {
     private final Set<String> channelNames = new HashSet<>();
 
-    public IgnoreChannelsStrategy(Collection<String> channelNames) {
+    public IgnoreChannelsListeningStrategy(Collection<String> channelNames) {
         this.channelNames.addAll(channelNames);
     }
 

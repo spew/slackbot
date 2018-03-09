@@ -9,12 +9,12 @@ import static org.junit.Assert.assertThat;
 public class ChannelListeningStrategyFactoryTest {
     @Test
     public void production() {
-        assertStageAndClass(Stage.Production, OnlyListenToSpecificChannelsStrategy.class);
+        assertStageAndClass(Stage.Production, SpecificChannelsAndDMsListeningStrategy.class);
     }
 
     @Test
     public void gamma() {
-        assertStageAndClass(Stage.Gamma, IgnoreChannelsStrategy.class);
+        assertStageAndClass(Stage.Gamma, IgnoreChannelsListeningStrategy.class);
     }
 
     private void assertStageAndClass(Stage stage, Class klass) {
