@@ -163,7 +163,7 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
             results.add("$" + decimalFormat.format(usdtTicker.getPrice()));
         }
         if (btcTicker != null) {
-            results.add("\u20BF" + btcTicker.getPrice().toPlainString());
+            results.add("\u0E3F" + btcTicker.getPrice().toPlainString());
         }
         if (ethTicker != null) {
             results.add("Ξ" + ethTicker.getPrice().toPlainString());
@@ -180,12 +180,22 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
             results.add("$" + decimalFormat.format(usdtTicker.getLastPrice()));
         }
         if (btcTicker != null) {
-            results.add("\u20BF" + btcTicker.getLastPrice().toPlainString());
+            results.add("\u0E3F" + formatBinancePrice(btcTicker));
         }
         if (ethTicker != null) {
-            results.add("Ξ" + ethTicker.getLastPrice().toPlainString());
+            results.add("Ξ" + formatBinancePrice(ethTicker));
         }
         return results.stream().collect(Collectors.joining("\n"));
+    }
+
+    private String formatBinancePrice(BinanceTicker24h ticker) {
+        BigDecimal priceChangePercent = ticker.getPriceChangePercent();
+        boolean isZeroOrPositive = priceChangePercent.compareTo(BigDecimal.ZERO) >= 0;
+
+        return String.format("%s (%s%s%%)",
+                ticker.getLastPrice().toPlainString(),
+                isZeroOrPositive ? "+" : "",
+                decimalFormat.format(priceChangePercent));
     }
 
     private String getColor(CoinMarketCapTicker ticker) {
