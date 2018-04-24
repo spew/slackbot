@@ -25,7 +25,7 @@ public class ApplicationConfiguration {
     }
 
     public List<String> getChannelNames() {
-        List<String> defaultChannels = Arrays.asList(new String[]{"general"});
+        List<String> defaultChannels = Arrays.asList(new String[]{"general", "dacoins"});
         return configuration.getList(String.class, "CHANNEL_NAMES", defaultChannels);
     }
 
