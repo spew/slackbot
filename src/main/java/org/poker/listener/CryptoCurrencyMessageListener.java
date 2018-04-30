@@ -21,6 +21,7 @@ import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.gdax.GDAXExchange;
 import org.knowm.xchange.gdax.dto.marketdata.GDAXProductTicker;
 import org.knowm.xchange.gdax.service.GDAXMarketDataService;
+import org.poker.cryptocurrency.CoinMarketCapIconURLRetriever;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -28,6 +29,7 @@ import java.math.MathContext;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class CryptoCurrencyMessageListener implements SlackMessagePostedListener {
@@ -72,7 +74,10 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         SlackAttachment attachment = new SlackAttachment();
         attachment.setFallback(formatMessage(ticker));
         attachment.setColor(getColor(ticker));
-        attachment.setThumbUrl("https://files.coinmarketcap.com/static/img/coins/128x128/" + ticker.getID() + ".png");
+        Optional<String> thumbUrl = new CoinMarketCapIconURLRetriever().retrieve(ticker.getID());
+        if (thumbUrl.isPresent()) {
+            attachment.setThumbUrl(thumbUrl.get());
+        }
         String overview = String.format("Cap: %s\nVolume: %s",
                 "$" + ICUHumanize.compactDecimal(ticker.getMarketCapUSD()),
                 ICUHumanize.compactDecimal(ticker.getVolume24hUSD()));
