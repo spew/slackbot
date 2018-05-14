@@ -79,7 +79,10 @@ public class ExtendedHoursStockQuotesQuery1V7Request extends QuotesRequest<Exten
         }
         ExtendedHoursStockQuote extendedHoursStockQuote = new ExtendedHoursStockQuote();
         extendedHoursStockQuote.setChangePercent(Utils.getBigDecimal(getStringValue(node, prefix + "MarketChangePercent")));
-        extendedHoursStockQuote.setTime(Utils.unixToCalendar(Utils.getLong(getStringValue(node,prefix + "MarketTime"))));
+        String marketTime = getStringValue(node, prefix + "MarketTime");
+        if (marketTime != null) {
+            extendedHoursStockQuote.setTime(Utils.unixToCalendar(Utils.getLong(marketTime)));
+        }
         extendedHoursStockQuote.setPrice(Utils.getBigDecimal(getStringValue(node, prefix + "MarketPrice")));
         extendedHoursStockQuote.setPriceChange(Utils.getBigDecimal(getStringValue(node,prefix + "MarketChange")));
         extendedHoursStockQuote.setType(ExtendedHoursStockQuoteType.valueOf(getStringValue(node, "marketState")));
