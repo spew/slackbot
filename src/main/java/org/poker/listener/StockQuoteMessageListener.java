@@ -52,11 +52,16 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
     private String formatMessage(ExtendedStockQuote extendedStockQuote) {
         StringBuilder sb = new StringBuilder();
         sb.append(formatMainMessage(extendedStockQuote.getStock()));
-        if (extendedStockQuote.getExtendedHoursStockQuote() != null) {
+        if (shouldAddExtendedHoursMessage(extendedStockQuote.getExtendedHoursStockQuote())) {
             sb.append("\n");
             sb.append(formatExtendedHoursMessage(extendedStockQuote.getExtendedHoursStockQuote()));
         }
         return sb.toString();
+    }
+
+    private boolean shouldAddExtendedHoursMessage(ExtendedHoursStockQuote extendedHoursStockQuote) {
+        return extendedHoursStockQuote != null && extendedHoursStockQuote.getChangePercent() != null && extendedHoursStockQuote.getPrice() != null
+                && extendedHoursStockQuote.getPriceChange() != null;
     }
 
     private String formatExtendedHoursMessage(ExtendedHoursStockQuote extendedHoursStockQuote) {
