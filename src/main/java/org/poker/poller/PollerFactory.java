@@ -19,9 +19,8 @@ public class PollerFactory {
 
     public static List<Poller> newDefaultPollers(ApplicationConfiguration applicationConfiguration, SlackSession session) {
         List<Poller> list = new ArrayList<>();
-        //list.add(newYoutubePoller(Channel.LATB_CHANNEL_ID, applicationConfiguration, session));
-        //list.add(newYoutubePoller(Channel.BROGAN_CHANNEL_ID, applicationConfiguration, session));
-        list.add(newYoutubePoller(Channel.THE_YOUNG_TURKS_CHANNEL_ID, applicationConfiguration, session));
+        list.add(newYoutubePoller(Channel.LATB_CHANNEL_ID, applicationConfiguration, session));
+        list.add(newYoutubePoller(Channel.BROGAN_CHANNEL_ID, applicationConfiguration, session));
         return list;
     }
 
