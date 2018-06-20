@@ -5,6 +5,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.poker.config.ApplicationConfiguration;
 import org.poker.listener.DefaultListenerAdder;
+import org.poker.poller.PollerFactory;
+import org.poker.poller.PollerManager;
 import org.poker.slack.SlackSessionProvider;
 
 public class SlackBotApplication {
@@ -15,7 +17,9 @@ public class SlackBotApplication {
         logger.info("Starting slackbot...");
         SlackSession session = new SlackSessionProvider(applicationConfiguration).provide();
         new DefaultListenerAdder(applicationConfiguration).addMessagePostedListeners(session);
-        runLoop();
+        try (PollerManager pollerManager = PollerFactory.newDefaultPollerManager(applicationConfiguration, session)) {
+            runLoop();
+        }
         logger.info("Exiting slackbot.");
     }
 

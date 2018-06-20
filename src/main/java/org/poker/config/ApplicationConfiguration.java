@@ -24,6 +24,10 @@ public class ApplicationConfiguration {
         return configuration.getString("SLACK_API_TOKEN", null);
     }
 
+    public String getYoutubeApiKey() {
+        return configuration.getString("YOUTUBE_API_KEY", null);
+    }
+
     public List<String> getChannelNames() {
         List<String> defaultChannels = Arrays.asList(new String[]{"general"});
         return configuration.getList(String.class, "CHANNEL_NAMES", defaultChannels);
