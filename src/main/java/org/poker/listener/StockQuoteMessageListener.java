@@ -7,6 +7,7 @@ import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
 import humanize.ICUHumanize;
 import org.poker.stock.ExtendedStockQuote;
+import org.poker.stock.StockQuoteRequestParser;
 import org.poker.stock.YahooFinanceStockResolver;
 import yahoofinance.Stock;
 import yahoofinance.quotes.stock.ExtendedHoursStockQuote;
@@ -15,6 +16,7 @@ import yahoofinance.quotes.stock.StockQuote;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.text.DecimalFormat;
+import java.util.List;
 
 public class StockQuoteMessageListener implements SlackMessagePostedListener {
     private static final DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
@@ -26,11 +28,12 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
 
     public void onEvent(SlackMessagePosted event, SlackSession session) {
         String message = event.getMessageContent();
-        if (!message.startsWith("$") || message.length() > 10) {
+        List<String> tickers = new StockQuoteRequestParser().getTickers(message);
+        if (tickers.isEmpty()) {
             return;
         }
         SlackChannel channel = event.getChannel();
-        ExtendedStockQuote extStockQuote = stockResolver.resolve(message.substring(1));
+        ExtendedStockQuote extStockQuote = stockResolver.resolve(tickers.get(0));
         if (extStockQuote.getStock().isValid()) {
             StockQuote quote = extStockQuote.getStock().getQuote();
             SlackAttachment attachment = formatAttachment(extStockQuote, quote);
