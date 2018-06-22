@@ -10,7 +10,7 @@ import org.poker.stock.YahooFinanceStockResolver;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
-public class StockQuoteMessageListenerTeset {
+public class StockQuoteMessageListenerTest {
     @Test
     public void longMessagesShouldBeIgnored() {
         StockQuoteMessageListener listener = new StockQuoteMessageListener(new YahooFinanceStockResolver());
