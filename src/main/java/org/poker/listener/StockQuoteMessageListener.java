@@ -32,12 +32,13 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
         if (tickers.isEmpty()) {
             return;
         }
-        SlackChannel channel = event.getChannel();
-        ExtendedStockQuote extStockQuote = stockResolver.resolve(tickers.get(0));
-        if (extStockQuote.getStock().isValid()) {
-            StockQuote quote = extStockQuote.getStock().getQuote();
-            SlackAttachment attachment = formatAttachment(extStockQuote, quote);
-            session.sendMessage(channel, attachment.getFallback(), attachment);
+        for (String ticker : tickers) {
+            ExtendedStockQuote extStockQuote = stockResolver.resolve(ticker);
+            if (extStockQuote.getStock().isValid()) {
+                StockQuote quote = extStockQuote.getStock().getQuote();
+                SlackAttachment attachment = formatAttachment(extStockQuote, quote);
+                session.sendMessage(event.getChannel(), attachment.getFallback(), attachment);
+            }
         }
     }
 

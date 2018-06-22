@@ -12,16 +12,6 @@ import static org.mockito.Mockito.*;
 
 public class StockQuoteMessageListenerTest {
     @Test
-    public void longMessagesShouldBeIgnored() {
-        StockQuoteMessageListener listener = new StockQuoteMessageListener(new YahooFinanceStockResolver());
-        SlackMessagePosted event = mock(SlackMessagePosted.class);
-        when(event.getMessageContent()).thenReturn("$thisisreallylongandshouldbeignored");
-        SlackSession session = mock(SlackSession.class);
-        listener.onEvent(event, session);
-        verify(session, never()).sendMessage(any(), any(), any(SlackAttachment.class));
-    }
-
-    @Test
     public void amznTicker() {
         StockQuoteMessageListener listener = new StockQuoteMessageListener(new YahooFinanceStockResolver());
         SlackMessagePosted event = mock(SlackMessagePosted.class);
@@ -61,5 +51,26 @@ public class StockQuoteMessageListenerTest {
         SlackAttachment actualAttachment = argumentCaptor.getValue();
         assertEquals(1, actualAttachment.getFields().size());
         assertEquals("Dow Jones Industrial Average", actualAttachment.getFields().get(0).getTitle());
+    }
+
+    @Test
+    public void multipleTickers() {
+        StockQuoteMessageListener listener = new StockQuoteMessageListener(new YahooFinanceStockResolver());
+        SlackMessagePosted event = mock(SlackMessagePosted.class);
+        when(event.getMessageContent()).thenReturn("$amzn $goog");
+        SlackSession session = mock(SlackSession.class);
+        listener.onEvent(event, session);
+        ArgumentCaptor<SlackAttachment> argumentCaptor = ArgumentCaptor.forClass(SlackAttachment.class);
+        verify(session, times(2)).sendMessage(any(), any(String.class), argumentCaptor.capture());
+        assertEquals(2, argumentCaptor.getAllValues().size());
+        SlackAttachment actualAttachment = argumentCaptor.getAllValues().get(0);
+        assertEquals(1, actualAttachment.getFields().size());
+        assertTickerAttachment(argumentCaptor.getAllValues().get((0)), "Amazon.com, Inc.");
+        assertTickerAttachment(argumentCaptor.getAllValues().get((1)), "Alphabet Inc.");
+    }
+
+    private void assertTickerAttachment(SlackAttachment attachment, String title) {
+        assertEquals(1, attachment.getFields().size());
+        assertEquals(title, attachment.getFields().get(0).getTitle());
     }
 }
