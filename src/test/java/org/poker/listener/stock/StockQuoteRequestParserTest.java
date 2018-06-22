@@ -32,6 +32,13 @@ public class StockQuoteRequestParserTest {
     }
 
     @Test
+    public void longTicker() {
+        StockQuoteRequestParser parser = new StockQuoteRequestParser();
+        List<String> tickers = parser.getTickers("$thisisreallylongandshouldbeignored");
+        assertThat(tickers, is(Arrays.asList()));
+    }
+
+    @Test
     public void multipleTickers() {
         StockQuoteRequestParser parser = new StockQuoteRequestParser();
         List<String> tickers = parser.getTickers("$goog $msft $brk.a $.dji");
