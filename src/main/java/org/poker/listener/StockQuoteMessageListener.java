@@ -2,6 +2,7 @@ package org.poker.listener;
 
 import com.ullink.slack.simpleslackapi.SlackAttachment;
 import com.ullink.slack.simpleslackapi.SlackChannel;
+import com.ullink.slack.simpleslackapi.SlackPreparedMessage;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
@@ -16,6 +17,7 @@ import yahoofinance.quotes.stock.StockQuote;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 public class StockQuoteMessageListener implements SlackMessagePostedListener {
@@ -32,14 +34,21 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
         if (tickers.isEmpty()) {
             return;
         }
+        List<SlackAttachment> attachments = new ArrayList<>();
         for (String ticker : tickers) {
             ExtendedStockQuote extStockQuote = stockResolver.resolve(ticker);
             if (extStockQuote.getStock().isValid()) {
                 StockQuote quote = extStockQuote.getStock().getQuote();
-                SlackAttachment attachment = formatAttachment(extStockQuote, quote);
-                session.sendMessage(event.getChannel(), attachment.getFallback(), attachment);
+                attachments.add(formatAttachment(extStockQuote, quote));
             }
         }
+        if (attachments.isEmpty()) {
+            return;
+        }
+        SlackPreparedMessage preparedMessage = new SlackPreparedMessage.Builder()
+                .withAttachments(attachments)
+                .build();
+        session.sendMessage(event.getChannel(), preparedMessage);
     }
 
     private SlackAttachment formatAttachment(ExtendedStockQuote extStockQuote, StockQuote quote) {
