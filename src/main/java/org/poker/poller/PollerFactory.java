@@ -21,6 +21,7 @@ public class PollerFactory {
         List<Poller> list = new ArrayList<>();
         list.add(newYoutubePoller(Channel.LATB_CHANNEL_ID, applicationConfiguration, session));
         list.add(newYoutubePoller(Channel.BROGAN_CHANNEL_ID, applicationConfiguration, session));
+        list.add(newYoutubePoller(Channel.DEADCO_CHANNEL_ID, applicationConfiguration, session));
         return list;
     }
 
