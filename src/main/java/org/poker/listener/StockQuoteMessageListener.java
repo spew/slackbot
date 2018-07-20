@@ -7,7 +7,7 @@ import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
 import humanize.ICUHumanize;
 import org.poker.stock.ExtendedStockQuote;
-import org.poker.stock.GoogleImagesLogoURLRetriever;
+import org.poker.stock.LogoURLRetriever;
 import org.poker.stock.StockQuoteRequestParser;
 import org.poker.stock.YahooFinanceStockResolver;
 import yahoofinance.Stock;
@@ -24,9 +24,11 @@ import java.util.Optional;
 public class StockQuoteMessageListener implements SlackMessagePostedListener {
     private static final DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
     private final YahooFinanceStockResolver stockResolver;
+    private final LogoURLRetriever logoURLRetriever;
 
-    public StockQuoteMessageListener(YahooFinanceStockResolver stockResolver) {
+    public StockQuoteMessageListener(YahooFinanceStockResolver stockResolver, LogoURLRetriever logoURLRetriever) {
         this.stockResolver = stockResolver;
+        this.logoURLRetriever = logoURLRetriever;
     }
 
     public void onEvent(SlackMessagePosted event, SlackSession session) {
@@ -59,7 +61,7 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
         attachment.setColor(getColor(quote.getChange()));
         //TODO: find better place for images to support moar exchanges
         // attachment.setThumbUrl("https://www.nasdaq.com/logos/" + stock.getSymbol().toUpperCase() + ".GIF");
-        Optional<String> thumbUrl = new GoogleImagesLogoURLRetriever().retrieve(stock.getName());
+        Optional<String> thumbUrl = logoURLRetriever.retrieve(stock.getName());
         thumbUrl.ifPresent(attachment::setThumbUrl);
         attachment.addField(stock.getName(), formatMessage(extStockQuote), false);
         return attachment;
