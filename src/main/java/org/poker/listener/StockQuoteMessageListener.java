@@ -36,11 +36,11 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
             return;
         }
         List<SlackAttachment> attachments = new ArrayList<>();
-        for (String ticker : tickers) {
-            ExtendedStockQuote extStockQuote = stockResolver.resolve(ticker);
-            if (extStockQuote.getStock().isValid()) {
-                StockQuote quote = extStockQuote.getStock().getQuote();
-                attachments.add(formatAttachment(extStockQuote, quote));
+        List<ExtendedStockQuote> quotes = stockResolver.resolve(tickers.toArray(new String[tickers.size()]));
+        for (ExtendedStockQuote q : quotes) {
+            if (q.getStock().isValid()) {
+                StockQuote quote = q.getStock().getQuote();
+                attachments.add(formatAttachment(q, quote));
             }
         }
         if (attachments.isEmpty()) {
