@@ -6,6 +6,8 @@ import org.poker.config.ApplicationConfiguration;
 import org.poker.config.Stage;
 import org.poker.listener.strategy.ChannelListeningStrategy;
 import org.poker.listener.strategy.ChannelListeningStrategyFactory;
+import org.poker.stock.CachingLogoURLRetriever;
+import org.poker.stock.GoogleImagesLogoURLRetriever;
 import org.poker.stock.YahooFinanceStockResolver;
 
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ public class DefaultListenerAdder {
     private List<SlackMessagePostedListener> createListeners() {
         List<SlackMessagePostedListener> listeners = new ArrayList<>();
         listeners.add(new CryptoCurrencyMessageListener());
-        listeners.add(new StockQuoteMessageListener(new YahooFinanceStockResolver()));
+        listeners.add(new StockQuoteMessageListener(new YahooFinanceStockResolver(), new CachingLogoURLRetriever(new GoogleImagesLogoURLRetriever())));
         Stage stage = applicationConfiguration.getStage();
         ChannelListeningStrategy channelListeningStrategy = ChannelListeningStrategyFactory.newDefault(stage);
         return listeners.stream().map(l -> new ChannelAwareMessageListener(l, channelListeningStrategy)).collect(Collectors.toList());

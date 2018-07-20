@@ -6,6 +6,7 @@ import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.poker.stock.LogoURLRetriever;
 import org.poker.stock.YahooFinanceStockResolver;
 
 import java.util.ArrayList;
@@ -38,7 +39,8 @@ public class StockQuoteMessageListenerTest {
     }
 
     private void assertTickers(String message, List<String> expectedTitles) {
-        StockQuoteMessageListener listener = new StockQuoteMessageListener(new YahooFinanceStockResolver());
+        LogoURLRetriever logoURLRetriever = mock(LogoURLRetriever.class);
+        StockQuoteMessageListener listener = new StockQuoteMessageListener(new YahooFinanceStockResolver(), logoURLRetriever);
         SlackMessagePosted event = mock(SlackMessagePosted.class);
         when(event.getMessageContent()).thenReturn(message);
         SlackSession session = mock(SlackSession.class);
