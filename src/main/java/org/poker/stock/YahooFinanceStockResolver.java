@@ -3,7 +3,8 @@ package org.poker.stock;
 import com.google.common.base.Joiner;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class YahooFinanceStockResolver {
     public List<ExtendedStockQuote> resolve(String ... tickers) {
@@ -23,7 +24,6 @@ public class YahooFinanceStockResolver {
             results.add(sanitizeTicker(t));
         }
         return Joiner.on(",").join(results);
-
     }
 
     private String sanitizeTicker(String ticker) {
