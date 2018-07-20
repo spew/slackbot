@@ -1,27 +1,29 @@
 package org.poker.stock;
 
-import yahoofinance.YahooFinance;
+import com.google.common.base.Joiner;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class YahooFinanceStockResolver {
-    public ExtendedStockQuote resolve(String ticker) {
-        ticker = sanitizeTicker(ticker);
+    public List<ExtendedStockQuote> resolve(String ... tickers) {
+        String sanitizedTickers = sanitizeTickers(tickers);
         try {
             // this ugliness exists to extract the pre / post market data.
-            Map<String, ExtendedStockQuote> result = new HashMap<>();
-            ExtendedHoursStockQuotesQuery1V7Request request = new ExtendedHoursStockQuotesQuery1V7Request(ticker);
-            List<ExtendedStockQuote> stocks = request.getResult();
-            for(ExtendedStockQuote extStock : stocks) {
-                result.put(extStock.getStock().getSymbol(), extStock);
-            }
-            return result.get(ticker.toUpperCase());
+            ExtendedHoursStockQuotesQuery1V7Request request = new ExtendedHoursStockQuotesQuery1V7Request(sanitizedTickers);
+            return request.getResult();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String sanitizeTickers(String ... tickers) {
+        List<String> results = new ArrayList<>();
+        for (String t : tickers) {
+            results.add(sanitizeTicker(t));
+        }
+        return Joiner.on(",").join(results);
+
     }
 
     private String sanitizeTicker(String ticker) {
