@@ -21,7 +21,7 @@ public class StockQuoteRequestParser {
     }
 
     private List<String> expandTicker(String ticker) {
-        switch (ticker) {
+        switch (ticker.toUpperCase()) {
             case FAANG_TICKER:
                 return FAANG_TICKER_LIST;
             default:
