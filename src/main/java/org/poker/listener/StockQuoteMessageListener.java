@@ -136,7 +136,7 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
         } else if (cmp > 0) {
             return "good";
         } else {
-            if (percentChange24Hour.compareTo(new BigDecimal(-10, MathContext.DECIMAL32)) >= 0) {
+            if (percentChange24Hour.compareTo(new BigDecimal(-5, MathContext.DECIMAL32)) >= 0) {
                 return "warning";
             }
             return "danger";
