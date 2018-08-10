@@ -62,7 +62,7 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
         if (shouldAddExtendedHoursMessage(extStockQuote.getExtendedHoursStockQuote())) {
             percentChange = extStockQuote.getExtendedHoursStockQuote().getChangePercent();
         } else {
-            percentChange = quote.getChange();
+            percentChange = quote.getChangeInPercent();
         }
         attachment.setColor(getColor(percentChange));
         //TODO: find better place for images to support moar exchanges
