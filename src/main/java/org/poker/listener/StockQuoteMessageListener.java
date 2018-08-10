@@ -58,7 +58,13 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
         Stock stock = extStockQuote.getStock();
         SlackAttachment attachment = new SlackAttachment();
         attachment.setFallback("");
-        attachment.setColor(getColor(quote.getChange()));
+        BigDecimal percentChange;
+        if (shouldAddExtendedHoursMessage(extStockQuote.getExtendedHoursStockQuote())) {
+            percentChange = extStockQuote.getExtendedHoursStockQuote().getChangePercent();
+        } else {
+            percentChange = quote.getChange();
+        }
+        attachment.setColor(getColor(percentChange));
         //TODO: find better place for images to support moar exchanges
         // attachment.setThumbUrl("https://www.nasdaq.com/logos/" + stock.getSymbol().toUpperCase() + ".GIF");
         Optional<String> thumbUrl = logoURLRetriever.retrieve(stock.getName());
