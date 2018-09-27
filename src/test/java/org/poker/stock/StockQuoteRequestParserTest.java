@@ -25,4 +25,10 @@ public class StockQuoteRequestParserTest {
         List<String> tickers = new StockQuoteRequestParser().getTickers("$fAanG");
         assertEquals(Arrays.asList("FB", "AMZN", "AAPL", "NFLX", "GOOG"), tickers);
     }
+
+    @Test
+    public void FAANGS() {
+        List<String> tickers = new StockQuoteRequestParser().getTickers("$FAANGS");
+        assertEquals(Arrays.asList("FB", "AMZN", "AAPL", "NFLX", "GOOG", "SQ"), tickers);
+    }
 }
