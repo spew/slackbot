@@ -3,7 +3,6 @@ package org.poker.listener;
 import com.ullink.slack.simpleslackapi.SlackAttachment;
 import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.SlackSession;
-import com.ullink.slack.simpleslackapi.SlackUser;
 import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
 import humanize.ICUHumanize;
@@ -33,9 +32,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class CryptoCurrencyMessageListener implements SlackMessagePostedListener {
+    private static final DecimalFormat standardDecimalFormat = new DecimalFormat("#,###.00");
+    private static final DecimalFormat lessThanZeroDecimalFormat = new DecimalFormat("0.#####");
+
     private List<Exchange> exchanges = new ArrayList<>();
-    private static final DecimalFormat decimalFormat = new DecimalFormat("#,###.00");
-    ;
+
     private BinanceExchange binanceExchange;
     private GDAXExchange gdaxExchange;
 
@@ -54,15 +55,11 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         }
         String coin = getCurrencyCodeFromMessage(message);
         SlackChannel channel = event.getChannel();
-        SlackUser messageSender = event.getSender();
         for (Exchange e : exchanges) {
             List<CurrencyPair> currencyPairs = e.getExchangeSymbols();
             for (CurrencyPair cp : currencyPairs) {
                 if (cp.base.getCurrencyCode().equalsIgnoreCase(coin) && cp.counter.getCurrencyCode().equals("USD")) {
                     CoinMarketCapTicker ticker = getCoinMarketCapTicker(e, cp);
-                    BigDecimal usdPrice = ticker.getPriceUSD();
-                    BigDecimal percentChange24Hour = ticker.getPctChange24h();
-                    boolean isZeroOrPositive = percentChange24Hour.compareTo(BigDecimal.ZERO) >= 0;
                     SlackAttachment attachment = formatAttachment(cp.base.getCurrencyCode(), ticker);
                     session.sendMessage(channel, attachment.getFallback(), attachment);
                 }
@@ -75,12 +72,8 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         attachment.setFallback(formatMessage(ticker));
         attachment.setColor(getColor(ticker));
         Optional<String> thumbUrl = new CoinMarketCapIconURLRetriever().retrieve(ticker.getID());
-        if (thumbUrl.isPresent()) {
-            attachment.setThumbUrl(thumbUrl.get());
-        }
-        String overview = String.format("Cap: %s\nVolume: %s",
-                "$" + ICUHumanize.compactDecimal(ticker.getMarketCapUSD()),
-                ICUHumanize.compactDecimal(ticker.getVolume24hUSD()));
+        thumbUrl.ifPresent(attachment::setThumbUrl);
+
         attachment.addField("Binance", formatBinancePrices(baseCurrencyCode), true);
         if (shouldIncludeCoinbase(baseCurrencyCode)) {
             attachment.addField("GDAX", formatCoinbasePrices(baseCurrencyCode), true);
@@ -93,15 +86,14 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         BigDecimal percentChange24Hour = ticker.getPctChange24h();
         String currencyCode = ticker.getBaseCurrency().getCurrency().getCurrencyCode();
         boolean isZeroOrPositive = percentChange24Hour.compareTo(BigDecimal.ZERO) >= 0;
-        String strMessage = String.format("%s (%s): $%s (%s%s%%) | Cap: %s | Vol: %s",
+        return String.format("%s (%s): $%s (%s%s%%) | Cap: %s | Vol: %s",
                 ticker.getName(),
                 currencyCode,
-                decimalFormat.format(usdPrice),
+                formatPrice(usdPrice),
                 isZeroOrPositive ? "+" : "",
-                decimalFormat.format(percentChange24Hour),
+                formatPercentage(percentChange24Hour),
                 "$" + ICUHumanize.compactDecimal(ticker.getMarketCapUSD()),
                 ICUHumanize.compactDecimal(ticker.getVolume24hUSD()));
-        return strMessage;
     }
 
     private String getCurrencyCodeFromMessage(String message) {
@@ -165,7 +157,7 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         GDAXProductTicker ethTicker = getGdaxTicker(baseCurrencyCode, "ETH");
         List<String> results = new ArrayList<>();
         if (usdtTicker != null) {
-            results.add("$" + decimalFormat.format(usdtTicker.getPrice()));
+            results.add("$" + formatPrice(usdtTicker.getPrice()));
         }
         if (btcTicker != null) {
             results.add("\u0E3F" + btcTicker.getPrice().toPlainString());
@@ -182,7 +174,7 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         BinanceTicker24h ethTicker = getBinanceTicker(baseCurrencyCode, "ETH");
         List<String> results = new ArrayList<>();
         if (usdtTicker != null) {
-            results.add("$" + decimalFormat.format(usdtTicker.getLastPrice()));
+            results.add("$" + formatPrice(usdtTicker.getLastPrice()));
         }
         if (btcTicker != null) {
             results.add("\u0E3F" + formatBinancePrice(btcTicker));
@@ -200,7 +192,7 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         return String.format("%s (%s%s%%)",
                 ticker.getLastPrice().toPlainString(),
                 isZeroOrPositive ? "+" : "",
-                decimalFormat.format(priceChangePercent));
+                formatPercentage(priceChangePercent));
     }
 
     private String getColor(CoinMarketCapTicker ticker) {
@@ -230,5 +222,16 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
             throw new RuntimeException(e);
         }
         return null;
+    }
+
+    private static String formatPrice(BigDecimal decimal) {
+        if (decimal.compareTo(BigDecimal.ONE) < 0) {
+            return lessThanZeroDecimalFormat.format(decimal);
+        }
+        return standardDecimalFormat.format(decimal);
+    }
+
+    private static String formatPercentage(BigDecimal percentage) {
+        return standardDecimalFormat.format(percentage);
     }
 }

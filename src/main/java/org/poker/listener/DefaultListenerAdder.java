@@ -31,7 +31,6 @@ public class DefaultListenerAdder {
         List<SlackMessagePostedListener> listeners = new ArrayList<>();
         listeners.add(new CryptoCurrencyMessageListener());
         listeners.add(new StockQuoteMessageListener(new YahooFinanceStockResolver(), new CachingLogoURLRetriever(new GoogleImagesLogoURLRetriever())));
-        listeners.add(new VechainTempListener());
         Stage stage = applicationConfiguration.getStage();
         ChannelListeningStrategy channelListeningStrategy = ChannelListeningStrategyFactory.newDefault(stage);
         return listeners.stream().map(l -> new ChannelAwareMessageListener(l, channelListeningStrategy)).collect(Collectors.toList());
