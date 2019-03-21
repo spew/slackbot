@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class StockQuoteRequestParser {
+    private static final String MAGA_TICKER = "MAGA";
+    private static final List<String> MAGA_TICKER_LIST = Arrays.asList("MSFT", "AAPL", "GOOG", "AMZN");
     private static final String FAANG_TICKER = "FAANG";
     private static final String FAANGS_TICKER = "FAANGS";
     private static final List<String> FAANG_TICKER_LIST = Arrays.asList("FB", "AMZN", "AAPL", "NFLX", "GOOG");
@@ -30,6 +32,8 @@ public class StockQuoteRequestParser {
                 return FAANG_TICKER_LIST;
             case FAANGS_TICKER:
                 return FAANGS_TICKER_LIST;
+            case MAGA_TICKER:
+                return MAGA_TICKER_LIST;
             default:
                 return Arrays.asList(ticker);
         }
