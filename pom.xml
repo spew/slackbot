@@ -22,7 +22,7 @@
     <mockito.version>2.13.0</mockito.version>
     <simpleslackapi.version>1.2.0</simpleslackapi.version>
     <slf4j.version>1.7.7</slf4j.version>
-    <xchange.version>4.3.2</xchange.version>
+    <xchange.version>4.3.19</xchange.version>
     <yahoofinance.version>3.12.3</yahoofinance.version>
     <json.version>20140107</json.version>
   </properties>
@@ -121,12 +121,12 @@
     </dependency>
     <dependency>
       <groupId>org.knowm.xchange</groupId>
-      <artifactId>xchange-core</artifactId>
+      <artifactId>xchange-coinbasepro</artifactId>
       <version>${xchange.version}</version>
     </dependency>
     <dependency>
       <groupId>org.knowm.xchange</groupId>
-      <artifactId>xchange-gdax</artifactId>
+      <artifactId>xchange-core</artifactId>
       <version>${xchange.version}</version>
     </dependency>
     <dependency>

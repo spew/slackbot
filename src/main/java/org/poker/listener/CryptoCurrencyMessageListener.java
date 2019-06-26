@@ -13,13 +13,14 @@ import org.knowm.xchange.binance.BinanceExchange;
 import org.knowm.xchange.binance.dto.marketdata.BinanceTicker24h;
 import org.knowm.xchange.binance.service.BinanceMarketDataService;
 import org.knowm.xchange.binance.service.BinanceMarketDataServiceRaw;
-import org.knowm.xchange.coinmarketcap.CoinMarketCapExchange;
-import org.knowm.xchange.coinmarketcap.dto.marketdata.CoinMarketCapTicker;
-import org.knowm.xchange.coinmarketcap.service.CoinMarketCapMarketDataService;
+import org.knowm.xchange.coinbasepro.CoinbaseProExchange;
+import org.knowm.xchange.coinbasepro.dto.marketdata.CoinbaseProProductTicker;
+import org.knowm.xchange.coinbasepro.service.CoinbaseProMarketDataService;
+import org.knowm.xchange.coinmarketcap.deprecated.v2.CoinMarketCapExchange;
+import org.knowm.xchange.coinmarketcap.deprecated.v2.dto.marketdata.CoinMarketCapQuote;
+import org.knowm.xchange.coinmarketcap.deprecated.v2.dto.marketdata.CoinMarketCapTicker;
+import org.knowm.xchange.coinmarketcap.deprecated.v2.service.CoinMarketCapMarketDataService;
 import org.knowm.xchange.currency.CurrencyPair;
-import org.knowm.xchange.gdax.GDAXExchange;
-import org.knowm.xchange.gdax.dto.marketdata.GDAXProductTicker;
-import org.knowm.xchange.gdax.service.GDAXMarketDataService;
 import org.poker.cryptocurrency.CoinMarketCapIconURLRetriever;
 
 import java.io.IOException;
@@ -28,6 +29,7 @@ import java.math.MathContext;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -38,14 +40,14 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
     private List<Exchange> exchanges = new ArrayList<>();
 
     private BinanceExchange binanceExchange;
-    private GDAXExchange gdaxExchange;
+    private CoinbaseProExchange gdaxExchange;
 
     public CryptoCurrencyMessageListener() {
         ExchangeSpecification coinMarketCapExchangeSpecification = new CoinMarketCapExchange().getDefaultExchangeSpecification();
         exchanges.add(ExchangeFactory.INSTANCE.createExchange(coinMarketCapExchangeSpecification));
         ExchangeSpecification binanceExchangeSpecification = new BinanceExchange().getDefaultExchangeSpecification();
         binanceExchange = (BinanceExchange) ExchangeFactory.INSTANCE.createExchange(binanceExchangeSpecification);
-        gdaxExchange = (GDAXExchange) ExchangeFactory.INSTANCE.createExchange(new GDAXExchange().getDefaultExchangeSpecification());
+        gdaxExchange = (CoinbaseProExchange) ExchangeFactory.INSTANCE.createExchange(new CoinbaseProExchange().getDefaultExchangeSpecification());
     }
 
     public void onEvent(SlackMessagePosted event, SlackSession session) {
@@ -60,30 +62,35 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
             for (CurrencyPair cp : currencyPairs) {
                 if (cp.base.getCurrencyCode().equalsIgnoreCase(coin) && cp.counter.getCurrencyCode().equals("USD")) {
                     CoinMarketCapTicker ticker = getCoinMarketCapTicker(e, cp);
-                    SlackAttachment attachment = formatAttachment(cp.base.getCurrencyCode(), ticker);
+                    Map<String, CoinMarketCapQuote> quotes = ticker.getQuotes();
+                    if (!quotes.containsKey(cp.counter.getCurrencyCode())) {
+                        continue;
+                    }
+                    CoinMarketCapQuote quote = quotes.get(cp.counter.getCurrencyCode());
+                    SlackAttachment attachment = formatAttachment(cp.base.getCurrencyCode(), ticker, quote);
                     session.sendMessage(channel, attachment.getFallback(), attachment);
                 }
             }
         }
     }
 
-    private SlackAttachment formatAttachment(String baseCurrencyCode, CoinMarketCapTicker ticker) {
+    private SlackAttachment formatAttachment(String baseCurrencyCode, CoinMarketCapTicker ticker, CoinMarketCapQuote quote) {
         SlackAttachment attachment = new SlackAttachment();
-        attachment.setFallback(formatMessage(ticker));
-        attachment.setColor(getColor(ticker));
+        attachment.setFallback(formatMessage(ticker, quote));
+        attachment.setColor(getColor(quote));
         Optional<String> thumbUrl = new CoinMarketCapIconURLRetriever().retrieve(ticker.getID());
         thumbUrl.ifPresent(attachment::setThumbUrl);
 
         attachment.addField("Binance", formatBinancePrices(baseCurrencyCode), true);
         if (shouldIncludeCoinbase(baseCurrencyCode)) {
-            attachment.addField("GDAX", formatCoinbasePrices(baseCurrencyCode), true);
+            attachment.addField("CoinbasePro", formatCoinbasePrices(baseCurrencyCode), true);
         }
         return attachment;
     }
 
-    private String formatMessage(CoinMarketCapTicker ticker) {
-        BigDecimal usdPrice = ticker.getPriceUSD();
-        BigDecimal percentChange24Hour = ticker.getPctChange24h();
+    private String formatMessage(CoinMarketCapTicker ticker, CoinMarketCapQuote quote) {
+        BigDecimal usdPrice = quote.getPrice();
+        BigDecimal percentChange24Hour = quote.getPctChange24h();
         String currencyCode = ticker.getBaseCurrency().getCurrency().getCurrencyCode();
         boolean isZeroOrPositive = percentChange24Hour.compareTo(BigDecimal.ZERO) >= 0;
         return String.format("%s (%s): $%s (%s%s%%) | Cap: %s | Vol: %s",
@@ -92,8 +99,8 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
                 formatPrice(usdPrice),
                 isZeroOrPositive ? "+" : "",
                 formatPercentage(percentChange24Hour),
-                "$" + ICUHumanize.compactDecimal(ticker.getMarketCapUSD()),
-                ICUHumanize.compactDecimal(ticker.getVolume24hUSD()));
+                "$" + ICUHumanize.compactDecimal(quote.getMarketCap()),
+                ICUHumanize.compactDecimal(quote.getVolume24h()));
     }
 
     private String getCurrencyCodeFromMessage(String message) {
@@ -138,23 +145,23 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         }
     }
 
-    private GDAXProductTicker getGdaxTicker(String baseCurrencyCode, String counterCurrencyCode) {
-        GDAXMarketDataService marketDataService = (GDAXMarketDataService) gdaxExchange.getMarketDataService();
+    private CoinbaseProProductTicker getCoinbaseProTicker(String baseCurrencyCode, String counterCurrencyCode) {
+        CoinbaseProMarketDataService marketDataService = (CoinbaseProMarketDataService) gdaxExchange.getMarketDataService();
         CurrencyPair cp = getCurrencyPairForExchange(gdaxExchange, baseCurrencyCode, counterCurrencyCode);
         if (cp == null) {
             return null;
         }
         try {
-            return marketDataService.getGDAXProductTicker(cp);
+            return marketDataService.getCoinbaseProProductTicker(cp);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     private String formatCoinbasePrices(String baseCurrencyCode) {
-        GDAXProductTicker usdtTicker = getGdaxTicker(baseCurrencyCode, "USD");
-        GDAXProductTicker btcTicker = getGdaxTicker(baseCurrencyCode, "BTC");
-        GDAXProductTicker ethTicker = getGdaxTicker(baseCurrencyCode, "ETH");
+        CoinbaseProProductTicker usdtTicker = getCoinbaseProTicker(baseCurrencyCode, "USD");
+        CoinbaseProProductTicker btcTicker = getCoinbaseProTicker(baseCurrencyCode, "BTC");
+        CoinbaseProProductTicker ethTicker = getCoinbaseProTicker(baseCurrencyCode, "ETH");
         List<String> results = new ArrayList<>();
         if (usdtTicker != null) {
             results.add("$" + formatPrice(usdtTicker.getPrice()));
@@ -195,8 +202,8 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
                 formatPercentage(priceChangePercent));
     }
 
-    private String getColor(CoinMarketCapTicker ticker) {
-        BigDecimal percentChange24Hour = ticker.getPctChange24h();
+    private String getColor(CoinMarketCapQuote quote) {
+        BigDecimal percentChange24Hour = quote.getPctChange24h();
         int cmp = percentChange24Hour.compareTo(BigDecimal.ZERO);
         if (cmp == 0) {
             return "warning";
