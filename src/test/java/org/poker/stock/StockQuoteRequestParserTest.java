@@ -41,6 +41,6 @@ public class StockQuoteRequestParserTest {
     @Test
     public void FOOD() {
         List<String> tickers = new StockQuoteRequestParser().getTickers("$FOOD");
-        assertEquals(Arrays.asList("CMG", "DPZ", "MCD", "NDLS"), tickers);
+        assertEquals(Arrays.asList("CMG", "DPZ", "MCD", "NDLS", "YUM"), tickers);
     }
 }

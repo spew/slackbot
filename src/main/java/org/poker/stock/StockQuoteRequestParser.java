@@ -16,7 +16,7 @@ public class StockQuoteRequestParser {
     private static final String WATCH_TICKER = "WATCH";
     private static final List<String> WATCH_TICKER_LIST = Arrays.asList("WMT", "AMZN", "TGT", "COST", "HD");
     private static final String FOOD_TICKER = "FOOD";
-    private static final List<String> FOOD_TICKER_LIST = Arrays.asList("CMG", "DPZ", "MCD", "NDLS");
+    private static final List<String> FOOD_TICKER_LIST = Arrays.asList("CMG", "DPZ", "MCD", "NDLS", "YUM");
 
     public List<String> getTickers(String message) {
         List<String> results = new ArrayList<>();
