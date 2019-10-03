@@ -15,6 +15,8 @@ public class StockQuoteRequestParser {
     private static final List<String> FAANGS_TICKER_LIST = Stream.concat(FAANG_TICKER_LIST.stream(), Arrays.asList("SQ").stream()).collect(Collectors.toList());
     private static final String WATCH_TICKER = "WATCH";
     private static final List<String> WATCH_TICKER_LIST = Arrays.asList("WMT", "AMZN", "TGT", "COST", "HD");
+    private static final String FOOD_TICKER = "FOOD";
+    private static final List<String> FOOD_TICKER_LIST = Arrays.asList("CMG", "DPZ", "MCD", "NDLS");
 
     public List<String> getTickers(String message) {
         List<String> results = new ArrayList<>();
@@ -38,6 +40,8 @@ public class StockQuoteRequestParser {
                 return MAGA_TICKER_LIST;
             case WATCH_TICKER:
                 return WATCH_TICKER_LIST;
+            case FOOD_TICKER:
+                return FOOD_TICKER_LIST;
             default:
                 return Arrays.asList(ticker);
         }
