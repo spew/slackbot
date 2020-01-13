@@ -5,8 +5,9 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import org.poker.config.ApplicationConfiguration;
+import org.poker.config.Stage;
+import org.poker.poller.strategy.ChannelMessageStrategy;
 import org.poker.poller.strategy.ChannelMessageStrategyFactory;
-import org.poker.poller.strategy.SpecificChannelsAndDMMessageStrategy;
 import org.poker.youtube.Channel;
 import org.poker.youtube.YoutubeLiveBroadcastSearcher;
 
@@ -24,12 +25,13 @@ public class PollerFactory {
         list.add(newYoutubePoller(Channel.LATB_CHANNEL_ID, applicationConfiguration, session));
         list.add(newYoutubePoller(Channel.BROGAN_CHANNEL_ID, applicationConfiguration, session));
         list.add(newYoutubePoller(Channel.DEADCO_CHANNEL_ID, applicationConfiguration, session));
-        list.add(newMarketStatusPoller(session));
+        list.add(newMarketStatusPoller(session, applicationConfiguration.getStage()));
         return list;
     }
 
-    private static YahooFinanceMarketStatusPoller newMarketStatusPoller(SlackSession session) {
-        SpecificChannelsAndDMMessageStrategy stockChannelStrategy = new SpecificChannelsAndDMMessageStrategy(Collections.singleton(org.poker.config.Channel.STOCK_CHANNEL));
+    private static YahooFinanceMarketStatusPoller newMarketStatusPoller(SlackSession session, Stage stage) {
+        List<String> stockChannel = Collections.singletonList(org.poker.config.Channel.STOCK_CHANNEL);
+        ChannelMessageStrategy stockChannelStrategy = ChannelMessageStrategyFactory.newSpecificChannelsStrategy(stage, stockChannel);
         ChannelAwarePollerSlackMessageSink messageSink = new ChannelAwarePollerSlackMessageSink(session, stockChannelStrategy);
         return new YahooFinanceMarketStatusPoller(messageSink);
     }
