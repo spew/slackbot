@@ -22,7 +22,8 @@ public class StockQuoteRequestParser {
         List<String> results = new ArrayList<>();
         String[] tokens = message.split(" ");
         for (String t : tokens) {
-            if (t.startsWith("$") && t.length() <= 10) {
+            t = t.trim();
+            if (t.startsWith("$") && t.length() >= 2 && t.length() <= 10) {
                 String ticker = t.substring(1).trim();
                 results.addAll(expandTicker(ticker));
             }

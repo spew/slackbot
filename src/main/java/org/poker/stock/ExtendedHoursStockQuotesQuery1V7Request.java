@@ -1,6 +1,7 @@
 package org.poker.stock;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.lang3.StringUtils;
 import yahoofinance.Stock;
 import yahoofinance.Utils;
 import yahoofinance.exchanges.ExchangeTimeZone;
@@ -59,7 +60,8 @@ public class ExtendedHoursStockQuotesQuery1V7Request extends QuotesRequest<Exten
     }
 
     private String getExtendedHoursPrefix(JsonNode node) {
-        String marketState = getStringValue(node, "marketState");
+        String marketState = StringUtils.trimToEmpty(getStringValue(node, "marketState"));
+
         if (marketState.equals("PRE")) {
             return "pre";
         }
