@@ -48,6 +48,7 @@ public class VirusMessageListener implements SlackMessagePostedListener {
         SlackPreparedMessage message = formatMessage(newTime, anchorTime, worldStats, usStats);
         session.sendMessage(event.getChannel(), message);
         anchorWorldStats = worldStats;
+        anchorUSStats = usStats;
         anchorTime = newTime;
     }
 
