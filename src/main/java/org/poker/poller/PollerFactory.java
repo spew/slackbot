@@ -6,7 +6,6 @@ import com.google.api.services.youtube.YouTube;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import org.poker.config.ApplicationConfiguration;
 import org.poker.config.Stage;
-import org.poker.coronavirus.VirusStatsRetriever;
 import org.poker.poller.strategy.ChannelMessageStrategy;
 import org.poker.poller.strategy.ChannelMessageStrategyFactory;
 import org.poker.youtube.Channel;
@@ -27,7 +26,6 @@ public class PollerFactory {
         list.add(newYoutubePoller(Channel.BROGAN_CHANNEL_ID, applicationConfiguration, session));
         list.add(newYoutubePoller(Channel.DEADCO_CHANNEL_ID, applicationConfiguration, session));
         list.add(newMarketStatusPoller(session, applicationConfiguration.getStage()));
-        list.add(newVirusPoller(applicationConfiguration, session));
         return list;
     }
 
@@ -49,10 +47,5 @@ public class PollerFactory {
         YoutubeLiveBroadcastSearcher liveBroadcastSearcher = new YoutubeLiveBroadcastSearcher(youtube, applicationConfiguration.getYoutubeApiKey());
         PollerSlackMessageSink messageSink = new ChannelAwarePollerSlackMessageSink(slackSession, ChannelMessageStrategyFactory.newDefault(applicationConfiguration));
         return new YoutubeChannelPoller(youtubeChannelId, liveBroadcastSearcher, messageSink);
-    }
-
-    private static VirusPoller newVirusPoller(ApplicationConfiguration applicationConfiguration, SlackSession session) {
-        PollerSlackMessageSink messageSink = new ChannelAwarePollerSlackMessageSink(session, ChannelMessageStrategyFactory.newDefault(applicationConfiguration));
-        return new VirusPoller(new VirusStatsRetriever(), messageSink);
     }
 }
