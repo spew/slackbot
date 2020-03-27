@@ -98,8 +98,8 @@ public class VirusMessageListener implements SlackMessagePostedListener {
         diff.DeathsDifference = now.getDeaths() - before.getDeaths();
         diff.RecoveriesDifference = now.getRecoveries() - before.getRecoveries();
         diff.TotalPercentage = calcPercentageDifference(now.getTotal(), before.getTotal());
-        diff.TotalPercentage = calcPercentageDifference(now.getDeaths(), before.getDeaths());
-        diff.TotalPercentage = calcPercentageDifference(now.getRecoveries(), before.getRecoveries());
+        diff.DeathsPercentage = calcPercentageDifference(now.getDeaths(), before.getDeaths());
+        diff.RecoveriesPercentage = calcPercentageDifference(now.getRecoveries(), before.getRecoveries());
         return diff;
     }
 
