@@ -29,7 +29,7 @@ public class YoutubeChannelPoller implements Poller {
 
     @Override
     public long getIntervalValue() {
-        return TimeUnit.MINUTES.toSeconds(0) + 30;
+        return TimeUnit.MINUTES.toSeconds(2) + 30;
     }
 
     @Override
