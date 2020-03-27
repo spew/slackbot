@@ -17,14 +17,23 @@ public class VirusStatsRetriever {
     }
 
     public VirusStats retrieve() {
+        return retrieve(null);
+    }
+
+    public VirusStats retrieve(String country) {
         try {
-            return retrieveThrows();
+            return retrieveThrows(country);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private VirusStats retrieveThrows() throws IOException {
+    public VirusStats retrieveUSA() {
+        return retrieve("US");
+    }
+
+    private VirusStats retrieveThrows(String country) throws IOException {
+        String url = getUrl(country);
         Document document = Jsoup.connect(url).get();
         String selector = "#maincounter-wrap > div > span";
         Elements elements = document.select(selector);
@@ -39,6 +48,13 @@ public class VirusStatsRetriever {
                 .withRecoveries(getIntValue(elements.get(2).text()))
                 .build();
         return stats;
+    }
+
+    private String getUrl(String country) {
+        if (country == null || country.isEmpty()) {
+            return url;
+        }
+        return String.format("%s/country/%s", url, country);
     }
 
     private int getIntValue(String value) {
