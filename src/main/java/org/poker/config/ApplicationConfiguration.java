@@ -20,6 +20,10 @@ public class ApplicationConfiguration {
         this.configuration = combinedConfiguration;
     }
 
+    public String getCoinMarketCapApiKey() {
+        return configuration.getString("COIN_MARKET_CAP_API_KEY", null);
+    }
+
     public String getSlackApiToken() {
         return configuration.getString("SLACK_API_TOKEN", null);
     }

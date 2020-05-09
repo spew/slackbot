@@ -16,10 +16,11 @@ import org.knowm.xchange.binance.service.BinanceMarketDataServiceRaw;
 import org.knowm.xchange.coinbasepro.CoinbaseProExchange;
 import org.knowm.xchange.coinbasepro.dto.marketdata.CoinbaseProProductTicker;
 import org.knowm.xchange.coinbasepro.service.CoinbaseProMarketDataService;
-import org.knowm.xchange.coinmarketcap.deprecated.v2.CoinMarketCapExchange;
-import org.knowm.xchange.coinmarketcap.deprecated.v2.dto.marketdata.CoinMarketCapQuote;
-import org.knowm.xchange.coinmarketcap.deprecated.v2.dto.marketdata.CoinMarketCapTicker;
-import org.knowm.xchange.coinmarketcap.deprecated.v2.service.CoinMarketCapMarketDataService;
+import org.knowm.xchange.coinmarketcap.pro.v1.CmcExchange;
+import org.knowm.xchange.coinmarketcap.pro.v1.dto.marketdata.CmcCurrency;
+import org.knowm.xchange.coinmarketcap.pro.v1.dto.marketdata.CmcQuote;
+import org.knowm.xchange.coinmarketcap.pro.v1.dto.marketdata.CmcTicker;
+import org.knowm.xchange.coinmarketcap.pro.v1.service.CmcMarketDataService;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.poker.cryptocurrency.CoinMarketCapIconURLRetriever;
 
@@ -29,7 +30,6 @@ import java.math.MathContext;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -37,14 +37,16 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
     private static final DecimalFormat standardDecimalFormat = new DecimalFormat("#,###.00");
     private static final DecimalFormat lessThanZeroDecimalFormat = new DecimalFormat("0.#####");
 
-    private List<Exchange> exchanges = new ArrayList<>();
-
     private BinanceExchange binanceExchange;
     private CoinbaseProExchange gdaxExchange;
+    private Exchange coinMarketCapExchange;
 
-    public CryptoCurrencyMessageListener() {
-        ExchangeSpecification coinMarketCapExchangeSpecification = new CoinMarketCapExchange().getDefaultExchangeSpecification();
-        exchanges.add(ExchangeFactory.INSTANCE.createExchange(coinMarketCapExchangeSpecification));
+    private List<CmcCurrency> cmcCurrencies = null;
+
+    public CryptoCurrencyMessageListener(String coinMarketCapApiKey) {
+        ExchangeSpecification coinMarketCapExchangeSpecification = new CmcExchange().getDefaultExchangeSpecification();
+        coinMarketCapExchangeSpecification.setApiKey(coinMarketCapApiKey);
+        this.coinMarketCapExchange = ExchangeFactory.INSTANCE.createExchange(coinMarketCapExchangeSpecification);
         ExchangeSpecification binanceExchangeSpecification = new BinanceExchange().getDefaultExchangeSpecification();
         binanceExchange = (BinanceExchange) ExchangeFactory.INSTANCE.createExchange(binanceExchangeSpecification);
         gdaxExchange = (CoinbaseProExchange) ExchangeFactory.INSTANCE.createExchange(new CoinbaseProExchange().getDefaultExchangeSpecification());
@@ -57,28 +59,62 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         }
         String coin = getCurrencyCodeFromMessage(message);
         SlackChannel channel = event.getChannel();
-        for (Exchange e : exchanges) {
-            List<CurrencyPair> currencyPairs = e.getExchangeSymbols();
-            for (CurrencyPair cp : currencyPairs) {
-                if (cp.base.getCurrencyCode().equalsIgnoreCase(coin) && cp.counter.getCurrencyCode().equals("USD")) {
-                    CoinMarketCapTicker ticker = getCoinMarketCapTicker(e, cp);
-                    Map<String, CoinMarketCapQuote> quotes = ticker.getQuotes();
-                    if (!quotes.containsKey(cp.counter.getCurrencyCode())) {
-                        continue;
-                    }
-                    CoinMarketCapQuote quote = quotes.get(cp.counter.getCurrencyCode());
-                    SlackAttachment attachment = formatAttachment(cp.base.getCurrencyCode(), ticker, quote);
-                    session.sendMessage(channel, attachment.getFallback(), attachment);
-                }
-            }
+        CmcCurrency cmcCurrency = getCmcCurrency(coin);
+        if (cmcCurrency == null) {
+            session.sendMessage(channel, String.format("No currency found with symbol '%s'", coin));
+            return;
+        }
+        CurrencyPair currencyPair = new CurrencyPair(cmcCurrency.getSymbol(), "USD");
+        CmcTicker cmcTicker = getCmcTicker(currencyPair);
+        CmcQuote quote = cmcTicker.getQuote().get(currencyPair.counter.getCurrencyCode());
+        SlackAttachment attachment = formatAttachment(cmcCurrency.getSymbol(), cmcTicker, quote);
+        session.sendMessage(channel, attachment.getFallback(), attachment);
+    }
+
+    private CmcTicker getCmcTicker(CurrencyPair currencyPair) {
+        CmcMarketDataService cmcMarketDataService = (CmcMarketDataService)coinMarketCapExchange.getMarketDataService();
+        try {
+            return cmcMarketDataService.getCmcLatestQuote(currencyPair).get(currencyPair.base.getCurrencyCode());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private SlackAttachment formatAttachment(String baseCurrencyCode, CoinMarketCapTicker ticker, CoinMarketCapQuote quote) {
+    private CmcCurrency getCmcCurrency(String coin) {
+        List<CmcCurrency> cmcCurrencies = getCmcCurrencies();
+        for (CmcCurrency currency : cmcCurrencies) {
+            if (currency.getSymbol().equalsIgnoreCase(coin)) {
+                return currency;
+            }
+        }
+        return null;
+    }
+
+    private List<CmcCurrency> getCmcCurrencies() {
+        synchronized (this) {
+            if (this.cmcCurrencies != null) {
+                return this.cmcCurrencies;
+            }
+        }
+        CmcMarketDataService cmcMarketDataService = (CmcMarketDataService)coinMarketCapExchange.getMarketDataService();
+        try {
+            List<CmcCurrency> results = cmcMarketDataService.getCmcCurrencyList();
+            synchronized (this) {
+                if (this.cmcCurrencies == null) {
+                    this.cmcCurrencies = results;
+                }
+                return this.cmcCurrencies;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private SlackAttachment formatAttachment(String baseCurrencyCode, CmcTicker ticker, CmcQuote quote) {
         SlackAttachment attachment = new SlackAttachment();
         attachment.setFallback(formatMessage(ticker, quote));
         attachment.setColor(getColor(quote));
-        Optional<String> thumbUrl = new CoinMarketCapIconURLRetriever().retrieve(ticker.getID());
+        Optional<String> thumbUrl = new CoinMarketCapIconURLRetriever().retrieve(ticker.getSymbol());
         thumbUrl.ifPresent(attachment::setThumbUrl);
 
         attachment.addField("Binance", formatBinancePrices(baseCurrencyCode), true);
@@ -88,14 +124,13 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         return attachment;
     }
 
-    private String formatMessage(CoinMarketCapTicker ticker, CoinMarketCapQuote quote) {
+    private String formatMessage(CmcTicker ticker, CmcQuote quote) {
         BigDecimal usdPrice = quote.getPrice();
-        BigDecimal percentChange24Hour = quote.getPctChange24h();
-        String currencyCode = ticker.getBaseCurrency().getCurrency().getCurrencyCode();
+        BigDecimal percentChange24Hour = quote.getPercentChange24h();
         boolean isZeroOrPositive = percentChange24Hour.compareTo(BigDecimal.ZERO) >= 0;
         return String.format("%s (%s): $%s (%s%s%%) | Cap: %s | Vol: %s",
                 ticker.getName(),
-                currencyCode,
+                ticker.getSymbol(),
                 formatPrice(usdPrice),
                 isZeroOrPositive ? "+" : "",
                 formatPercentage(percentChange24Hour),
@@ -202,8 +237,8 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
                 formatPercentage(priceChangePercent));
     }
 
-    private String getColor(CoinMarketCapQuote quote) {
-        BigDecimal percentChange24Hour = quote.getPctChange24h();
+    private String getColor(CmcQuote quote) {
+        BigDecimal percentChange24Hour = quote.getPercentChange24h();
         int cmp = percentChange24Hour.compareTo(BigDecimal.ZERO);
         if (cmp == 0) {
             return "warning";
@@ -215,20 +250,6 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
             }
             return "danger";
         }
-    }
-
-    private CoinMarketCapTicker getCoinMarketCapTicker(Exchange exchange, CurrencyPair currencyPair) {
-        CoinMarketCapMarketDataService dataService = ((CoinMarketCapMarketDataService) (exchange.getMarketDataService()));
-        try {
-            for (CoinMarketCapTicker t : dataService.getCoinMarketCapTickers()) {
-                if (t.getBaseCurrency().getCurrency().equals(currencyPair.base)) {
-                    return t;
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return null;
     }
 
     private static String formatPrice(BigDecimal decimal) {
