@@ -54,7 +54,7 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
 
     public void onEvent(SlackMessagePosted event, SlackSession session) {
         String message = event.getMessageContent();
-        if (!message.startsWith(".") || message.length() > 4) {
+        if (!message.startsWith(".") || message.length() > 5) {
             return;
         }
         String coin = getCurrencyCodeFromMessage(message);
