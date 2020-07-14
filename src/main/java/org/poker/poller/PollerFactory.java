@@ -25,6 +25,8 @@ public class PollerFactory {
         list.add(newYoutubePoller(Channel.LATB_CHANNEL_ID, applicationConfiguration, session));
         list.add(newYoutubePoller(Channel.BROGAN_CHANNEL_ID, applicationConfiguration, session));
         list.add(newYoutubePoller(Channel.DEADCO_CHANNEL_ID, applicationConfiguration, session));
+        list.add(newYoutubePoller(Channel.CHESSBRAH_CHANNEL_ID, applicationConfiguration, session));
+        list.add(newYoutubePoller(Channel.HIKARU_CHANNEL_ID, applicationConfiguration, session));
         list.add(newMarketStatusPoller(session, applicationConfiguration.getStage()));
         return list;
     }
