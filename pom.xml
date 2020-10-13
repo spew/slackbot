@@ -16,7 +16,7 @@
     <humanize-icu.version>1.2.2</humanize-icu.version>
     <jackson.version>2.10.0</jackson.version>
     <java.version>1.8</java.version>
-    <junit.version>4.11</junit.version>
+    <junit.version>4.13.1</junit.version>
     <jsoup.version>1.11.3</jsoup.version>
     <log4j.version>2.10.0</log4j.version>
     <mockito.version>2.13.0</mockito.version>
