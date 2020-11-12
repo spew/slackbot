@@ -9,16 +9,16 @@
   <name>slackbot</name>
 
   <properties>
-    <commons-configuration2.version>2.2</commons-configuration2.version>
+    <commons-configuration2.version>2.7</commons-configuration2.version>
     <google-api-services-youtube.version>v3-rev202-1.18.0-rc</google-api-services-youtube.version>
     <google-http-client-jackson2.version>1.23.0</google-http-client-jackson2.version>
     <hamcrest-core.version>1.3</hamcrest-core.version>
     <humanize-icu.version>1.2.2</humanize-icu.version>
     <jackson.version>2.10.0</jackson.version>
     <java.version>1.8</java.version>
-    <junit.version>4.11</junit.version>
+    <junit.version>4.13.1</junit.version>
     <jsoup.version>1.11.3</jsoup.version>
-    <log4j.version>2.10.0</log4j.version>
+    <log4j.version>2.13.3</log4j.version>
     <mockito.version>2.13.0</mockito.version>
     <resilience4j.version>1.3.1</resilience4j.version>
     <simpleslackapi.version>1.2.0</simpleslackapi.version>
