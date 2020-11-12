@@ -5,7 +5,6 @@ import com.ullink.slack.simpleslackapi.SlackPreparedMessage;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
-import humanize.ICUHumanize;
 import org.poker.coronavirus.VirusStats;
 import org.poker.coronavirus.VirusStatsRetriever;
 import org.poker.youtube.YoutubeLiveBroadcastSearcher;
@@ -24,9 +23,6 @@ public class VirusMessageListener implements SlackMessagePostedListener {
 
     private static final DecimalFormat oneDigitPrecisionDecimalFormat = new DecimalFormat("#,##0.0");
     private final VirusStatsRetriever statsRetriever;
-    private Date anchorTime;
-    private VirusStats anchorWorldStats;
-    private VirusStats anchorUSStats;
 
     public VirusMessageListener(VirusStatsRetriever statsRetriever) {
         this.statsRetriever = statsRetriever;
@@ -39,17 +35,9 @@ public class VirusMessageListener implements SlackMessagePostedListener {
         }
         VirusStats worldStats = statsRetriever.retrieve();
         VirusStats usStats = statsRetriever.retrieveUSA();
-        if (anchorWorldStats == null) {
-            anchorWorldStats = worldStats;
-            anchorUSStats = usStats;
-            anchorTime = new Date();
-        }
         Date newTime = new Date();
-        SlackPreparedMessage message = formatMessage(newTime, anchorTime, worldStats, usStats);
+        SlackPreparedMessage message = formatMessage(newTime, worldStats, usStats);
         session.sendMessage(event.getChannel(), message);
-        anchorWorldStats = worldStats;
-        anchorUSStats = usStats;
-        anchorTime = newTime;
     }
 
     private boolean shouldHandle(String message) {
@@ -64,22 +52,22 @@ public class VirusMessageListener implements SlackMessagePostedListener {
         }
     }
 
-    private SlackPreparedMessage formatMessage(Date curDate, Date prevDate, VirusStats curWorldStats, VirusStats curUSStats) {
-        StatsDifference worldDiff = getStatsDifference(anchorWorldStats, curWorldStats);
+    private SlackPreparedMessage formatMessage(Date curDate, VirusStats curWorldStats, VirusStats curUSStats) {
         SlackAttachment attachment = new SlackAttachment();
-        addField(attachment, "Worldwide Cases", curWorldStats.getTotal(), worldDiff.TotalDifference, worldDiff.TotalPercentage);
-        addField(attachment, "Worldwide Deaths", curWorldStats.getDeaths(), worldDiff.DeathsDifference, worldDiff.DeathsPercentage);
+        addField(attachment, "Worldwide Cases", curWorldStats.getTotalCases(), curWorldStats.getTotalCasesDelta(),
+                calcPercentageDifference(curWorldStats.getTotalCases(), curWorldStats.getTotalCases() - curWorldStats.getTotalCasesDelta()));
+        addField(attachment, "Worldwide Deaths", curWorldStats.getDeaths(), curWorldStats.getDeathsDelta(),
+                calcPercentageDifference(curWorldStats.getDeaths(), curWorldStats.getDeaths() - curWorldStats.getDeathsDelta()));
         List<SlackAttachment> attachments = new ArrayList<>();
         attachments.add(attachment);
-        StatsDifference usDiff = getStatsDifference(anchorUSStats, curUSStats);
         attachment = new SlackAttachment();
-        addField(attachment, "US Cases", curUSStats.getTotal(), usDiff.TotalDifference, usDiff.TotalPercentage);
-        addField(attachment, "US Deaths", curUSStats.getDeaths(), usDiff.DeathsDifference, usDiff.DeathsPercentage);
+        addField(attachment, "US Cases", curUSStats.getTotalCases(), curUSStats.getTotalCasesDelta(),
+                calcPercentageDifference(curUSStats.getTotalCases(), curUSStats.getTotalCases() - curUSStats.getTotalCasesDelta()));
+        addField(attachment, "US Deaths", curUSStats.getDeaths(), curUSStats.getDeathsDelta(),
+                calcPercentageDifference(curUSStats.getDeaths(), curUSStats.getDeaths() - curUSStats.getDeathsDelta()));
         attachments.add(attachment);
-        String naturalTime = ICUHumanize.naturalTime(prevDate, curDate, Locale.US);
-        naturalTime = naturalTime.replace("from now", "ago");
         SlackPreparedMessage preparedMessage = new SlackPreparedMessage.Builder()
-                .withMessage(String.format("Relative to %s:", naturalTime))
+                .withMessage("Relative to yesterday:")
                 .withAttachments(attachments)
                 .build();
         return preparedMessage;
@@ -92,29 +80,9 @@ public class VirusMessageListener implements SlackMessagePostedListener {
         );
     }
 
-    private StatsDifference getStatsDifference(VirusStats before, VirusStats now) {
-        StatsDifference diff = new StatsDifference();
-        diff.TotalDifference = now.getTotal() - before.getTotal();
-        diff.DeathsDifference = now.getDeaths() - before.getDeaths();
-        diff.RecoveriesDifference = now.getRecoveries() - before.getRecoveries();
-        diff.TotalPercentage = calcPercentageDifference(now.getTotal(), before.getTotal());
-        diff.DeathsPercentage = calcPercentageDifference(now.getDeaths(), before.getDeaths());
-        diff.RecoveriesPercentage = calcPercentageDifference(now.getRecoveries(), before.getRecoveries());
-        return diff;
-    }
-
     private double calcPercentageDifference(int currentValue, int prevValue) {
         int diff = currentValue - prevValue;
         return Integer.valueOf(diff).doubleValue() / prevValue * 100;
-    }
-
-    private class StatsDifference {
-        public double TotalPercentage;
-        public int TotalDifference;
-        public double DeathsPercentage;
-        public int DeathsDifference;
-        public double RecoveriesPercentage;
-        public int RecoveriesDifference;
     }
 
     private String formatPercentage(double percentage) {

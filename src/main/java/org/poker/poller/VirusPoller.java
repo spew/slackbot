@@ -60,7 +60,7 @@ public class VirusPoller implements Poller {
         String naturalTime = ICUHumanize.naturalTime(prevDate, curDate, Locale.US);
         naturalTime = naturalTime.replace("from now", "ago");
         attachment.setFallback(String.format("The virus is spreading! Relative to %s:", naturalTime));
-        addField(attachment, "Cases", currentStats.getTotal(), diff.TotalDifference, diff.TotalPercentage);
+        addField(attachment, "Cases", currentStats.getTotalCases(), diff.TotalDifference, diff.TotalPercentage);
         addField(attachment, "Deaths", currentStats.getDeaths(), diff.DeathsDifference, diff.DeathsPercentage);
         return attachment;
     }
@@ -84,10 +84,10 @@ public class VirusPoller implements Poller {
 
     private StatsDifference getStatsDifference(VirusStats before, VirusStats now) {
         StatsDifference diff = new StatsDifference();
-        diff.TotalDifference = now.getTotal() - before.getTotal();
+        diff.TotalDifference = now.getTotalCases() - before.getTotalCases();
         diff.DeathsDifference = now.getDeaths() - before.getDeaths();
         diff.RecoveriesDifference = now.getRecoveries() - before.getRecoveries();
-        diff.TotalPercentage = calcPercentageDifference(now.getTotal(), before.getTotal());
+        diff.TotalPercentage = calcPercentageDifference(now.getTotalCases(), before.getTotalCases());
         diff.TotalPercentage = calcPercentageDifference(now.getDeaths(), before.getDeaths());
         diff.TotalPercentage = calcPercentageDifference(now.getRecoveries(), before.getRecoveries());
         return diff;

@@ -6,6 +6,7 @@ import io.github.resilience4j.retry.RetryConfig;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -27,19 +28,48 @@ public class VirusStatsRetriever {
 
     public VirusStats retrieve(String country) {
         Document document = getDocument(country);
-        String selector = "#maincounter-wrap > div > span";
-        Elements elements = document.select(selector);
-        int expectedCount = 3;
-        if (elements.size() != expectedCount) {
-            throw new RuntimeException(String.format("Unexpected number of elements found for selector '%s': got '%v', want '%v'",
-                    selector, elements.size(), expectedCount));
-        }
+        //String selector = "#maincounter-wrap > div > span";
+        Element totalRow = findTotalsRow(document);
+        Elements elements = totalRow.select("td");
         VirusStats stats = VirusStats.newBuilder()
-                .withTotal(getIntValue(elements.get(0).text()))
-                .withDeaths(getIntValue(elements.get(1).text()))
-                .withRecoveries(getIntValue(elements.get(2).text()))
+                .withTotalCases(getIntValue(elements.get(2).text()))
+                .withTotalCasesDelta(getIntValue(elements.get(3).text()))
+                .withDeaths(getIntValue(elements.get(4).text()))
+                .withDeathsDelta(getIntValue(elements.get(5).text()))
+                .withRecoveries(getIntValue(elements.get(6).text()))
                 .build();
         return stats;
+    }
+
+    private Element findTotalsRow(Document document) {
+        String selector = "#nav-today > div > table > tbody > tr";
+        Elements elements = document.select(selector);
+        Element totalRow = findShortestNamedTotalRow(elements);
+        if (totalRow == null) {
+            throw new RuntimeException("expected to find a total row in document");
+        }
+        return totalRow;
+    }
+
+    private Element findShortestNamedTotalRow(Elements elements) {
+        Element minTotal = null;
+        for (Element e : elements) {
+            if (!isTotalRow(e)) {
+                continue;
+            }
+            if (minTotal == null) {
+                minTotal = e;
+            } else {
+                if (e.className().length() < minTotal.className().length()) {
+                    minTotal = e;
+                }
+            }
+        }
+        return minTotal;
+    }
+
+    private boolean isTotalRow(Element e) {
+        return e.is("tr") && e.className().contains("total_row");
     }
 
     public VirusStats retrieveUSA() {
@@ -54,6 +84,9 @@ public class VirusStatsRetriever {
     }
 
     private int getIntValue(String value) {
+        if (value.startsWith("+")) {
+            value = value.substring("+".length());
+        }
         NumberFormat format = NumberFormat.getInstance(Locale.US);
         try {
             Number number = format.parse(value);

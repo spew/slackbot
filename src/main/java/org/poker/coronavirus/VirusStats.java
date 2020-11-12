@@ -1,13 +1,17 @@
 package org.poker.coronavirus;
 
 public class VirusStats {
-    private int total;
+    private int totalCases;
+    private int totalCasesDelta;
     private int deaths;
+    private int deathsDelta;
     private int recoveries;
 
     private VirusStats(Builder builder) {
-        this.total = builder.total;
+        this.totalCases = builder.totalCases;
+        this.totalCasesDelta = builder.totalCasesDelta;
         this.deaths = builder.deaths;
+        this.deathsDelta = builder.deathsDelta;
         this.recoveries = builder.recoveries;
     }
 
@@ -15,12 +19,20 @@ public class VirusStats {
         return new Builder();
     }
 
-    public int getTotal() {
-        return total;
+    public int getTotalCases() {
+        return totalCases;
+    }
+
+    public int getTotalCasesDelta() {
+        return totalCasesDelta;
     }
 
     public int getDeaths() {
         return deaths;
+    }
+
+    public int getDeathsDelta() {
+        return deathsDelta;
     }
 
     public int getRecoveries() {
@@ -28,21 +40,33 @@ public class VirusStats {
     }
 
     public static class Builder {
-        private int total;
+        private int totalCases;
+        private int totalCasesDelta;
         private int deaths;
+        private int deathsDelta;
         private int recoveries;
 
         private Builder() {
 
         }
 
-        public Builder withTotal(int total) {
-            this.total = total;
+        public Builder withTotalCases(int totalCases) {
+            this.totalCases = totalCases;
+            return this;
+        }
+
+        public Builder withTotalCasesDelta(int totalCasesDelta) {
+            this.totalCasesDelta = totalCasesDelta;
             return this;
         }
 
         public Builder withDeaths(int deaths) {
             this.deaths = deaths;
+            return this;
+        }
+
+        public Builder withDeathsDelta(int deathsDelta) {
+            this.deathsDelta = deathsDelta;
             return this;
         }
 
