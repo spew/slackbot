@@ -84,6 +84,9 @@ public class VirusStatsRetriever {
     }
 
     private int getIntValue(String value) {
+        if (value.equals("")) {
+            return 0;
+        }
         if (value.startsWith("+")) {
             value = value.substring("+".length());
         }

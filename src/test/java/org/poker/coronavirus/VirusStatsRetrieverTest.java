@@ -10,5 +10,7 @@ public class VirusStatsRetrieverTest {
         VirusStatsRetriever retriever = new VirusStatsRetriever();
         VirusStats stats = retriever.retrieve();
         assertNotNull(stats);
+        stats = retriever.retrieve("us");
+        assertNotNull(stats);
     }
 }
