@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class ChessListener implements SlackMessagePostedListener {
     private ChessClient chessClient = new ChessClient();
-    private List<String> playersList = Arrays.asList("deathdealer69", "tbstoodz", "mylons", "idletom", "m4ttj0nes");
+    private List<String> playersList = Arrays.asList("deathdealer69", "tbstoodz", "mylons", "idletom", "m4ttj0nes", "p4labduhl");
 
     public ChessListener() {
         playersList.sort(String::compareToIgnoreCase);

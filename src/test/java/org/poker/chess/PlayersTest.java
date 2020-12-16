@@ -17,7 +17,7 @@ public class PlayersTest {
     @Test
     public void getStatsShouldSucceed() {
         ChessClient chessClient = new ChessClient();
-        Stats stats = chessClient.getPlayers().getStats("tbstoodz");
+        Stats stats = chessClient.getPlayers().getStats("p4labduhl");
         assertNotNull(stats);
     }
 }
