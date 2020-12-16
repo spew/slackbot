@@ -198,6 +198,9 @@
           </descriptorRefs>
           <tarLongFileMode>posix</tarLongFileMode>
           <archive>
+            <manifestEntries>
+              <Multi-Release>true</Multi-Release>
+            </manifestEntries>
             <manifest>
               <mainClass>org.poker.Main</mainClass>
             </manifest>
