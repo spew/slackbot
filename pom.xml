@@ -15,8 +15,10 @@
     <hamcrest-core.version>1.3</hamcrest-core.version>
     <humanize-icu.version>1.2.2</humanize-icu.version>
     <jackson.version>2.10.0</jackson.version>
-    <java.version>1.8</java.version>
+    <jackson-jsonld.version>0.1.1</jackson-jsonld.version>
+    <java.version>1.11</java.version>
     <junit.version>4.13.1</junit.version>
+    <jsonld.version>0.13.2</jsonld.version>
     <jsoup.version>1.11.3</jsoup.version>
     <log4j.version>2.13.3</log4j.version>
     <mockito.version>2.13.0</mockito.version>
@@ -56,6 +58,21 @@
       <version>${humanize-icu.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.io-informatics.oss</groupId>
+      <artifactId>jackson-jsonld</artifactId>
+      <version>${jackson-jsonld.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>${jackson.version}</version>
@@ -74,6 +91,11 @@
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
       <version>${hamcrest-core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.jsonld-java</groupId>
+      <artifactId>jsonld-java</artifactId>
+      <version>${jsonld.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jsoup</groupId>
@@ -161,8 +183,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.7.0</version>
         <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
+          <source>11</source>
+          <target>11</target>
         </configuration>
       </plugin>
       <plugin>

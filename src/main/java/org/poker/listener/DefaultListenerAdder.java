@@ -33,6 +33,7 @@ public class DefaultListenerAdder {
         listeners.add(new CryptoCurrencyMessageListener(applicationConfiguration.getCoinMarketCapApiKey()));
         listeners.add(new StockQuoteMessageListener(new YahooFinanceStockResolver(), new CachingLogoURLRetriever(new GoogleImagesLogoURLRetriever())));
         listeners.add(new VirusMessageListener(new VirusStatsRetriever()));
+        listeners.add(new ChessListener());
         Stage stage = applicationConfiguration.getStage();
         ChannelListeningStrategy channelListeningStrategy = ChannelListeningStrategyFactory.newDefault(stage);
         return listeners.stream().map(l -> new ChannelAwareMessageListener(l, channelListeningStrategy)).collect(Collectors.toList());
