@@ -1,12 +1,12 @@
 package org.poker.listener;
 
 import com.ullink.slack.simpleslackapi.SlackAttachment;
-import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.SlackPreparedMessage;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
 import humanize.ICUHumanize;
+import org.apache.commons.lang3.StringUtils;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.ExchangeSpecification;
@@ -88,13 +88,23 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         List<String> results = new ArrayList<>();
         String[] tokens = message.split(" ");
         for (String t : tokens) {
-            t = t.trim();
-            if (t.startsWith(".") && t.length() >= 2 && t.length() <= 10) {
-                String ticker = t.substring(1).trim();
+            String ticker = validateToken(t);
+            if (ticker != null) {
                 results.add(ticker);
             }
         }
         return results;
+    }
+
+    private String validateToken(String t) {
+        t = t.trim();
+        if (t.startsWith(".") && t.length() >= 2 && t.length() <= 10) {
+            t = t.substring(1).trim();
+            if (StringUtils.isAlphanumeric(t)) {
+                return t;
+            }
+        }
+        return null;
     }
 
     private CmcTicker getCmcTicker(CurrencyPair currencyPair) {
@@ -138,11 +148,11 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
 
     private SlackAttachment formatAttachment(String baseCurrencyCode, CmcTicker ticker, CmcQuote quote) {
         SlackAttachment attachment = new SlackAttachment();
-        attachment.setFallback(formatMessage(ticker, quote));
+        attachment.setFallback(formatTitle(ticker) + " " + formatMessage(quote));
         attachment.setColor(getColor(quote));
         Optional<String> thumbUrl = new CoinMarketCapIconURLRetriever().retrieve(ticker.getSymbol());
         thumbUrl.ifPresent(attachment::setThumbUrl);
-        attachment.addField(formatMessage(ticker, quote), null, false);
+        attachment.addField(formatTitle(ticker), formatMessage(quote), false);
         attachment.addField("Binance", formatBinancePrices(baseCurrencyCode), true);
         if (shouldIncludeCoinbase(baseCurrencyCode)) {
             attachment.addField("CoinbasePro", formatCoinbasePrices(baseCurrencyCode), true);
@@ -150,13 +160,15 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         return attachment;
     }
 
-    private String formatMessage(CmcTicker ticker, CmcQuote quote) {
+    private String formatTitle(CmcTicker ticker) {
+        return String.format("%s (%s)", ticker.getName(), ticker.getSymbol());
+    }
+
+    private String formatMessage(CmcQuote quote) {
         BigDecimal usdPrice = quote.getPrice();
         BigDecimal percentChange24Hour = quote.getPercentChange24h();
         boolean isZeroOrPositive = percentChange24Hour.compareTo(BigDecimal.ZERO) >= 0;
-        return String.format("%s (%s): $%s (%s%s%%) | Cap: %s | Vol: %s",
-                ticker.getName(),
-                ticker.getSymbol(),
+        return String.format("$%s (%s%s%%) | Cap: %s | Vol: %s",
                 formatPrice(usdPrice),
                 isZeroOrPositive ? "+" : "",
                 formatPercentage(percentChange24Hour),
