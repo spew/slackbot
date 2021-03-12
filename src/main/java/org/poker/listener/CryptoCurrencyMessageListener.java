@@ -2,6 +2,7 @@ package org.poker.listener;
 
 import com.ullink.slack.simpleslackapi.SlackAttachment;
 import com.ullink.slack.simpleslackapi.SlackChannel;
+import com.ullink.slack.simpleslackapi.SlackPreparedMessage;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
@@ -54,21 +55,46 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
 
     public void onEvent(SlackMessagePosted event, SlackSession session) {
         String message = event.getMessageContent();
-        if (!message.startsWith(".") || message.length() > 5) {
+        List<String> tickers = getTickers(message);
+        if (tickers.isEmpty()) {
             return;
         }
-        String coin = getCurrencyCodeFromMessage(message);
-        SlackChannel channel = event.getChannel();
-        CmcCurrency cmcCurrency = getCmcCurrency(coin);
-        if (cmcCurrency == null) {
-            session.sendMessage(channel, String.format("No currency found with symbol '%s'", coin));
+        List<SlackAttachment> attachments = new ArrayList<>();
+        for (String coin : tickers) {
+            CmcCurrency cmcCurrency = getCmcCurrency(coin);
+            SlackAttachment attachment = generateAttachment(coin, cmcCurrency);
+            attachments.add(attachment);
+        }
+        if (attachments.isEmpty()) {
             return;
+        }
+        SlackPreparedMessage preparedMessage = new SlackPreparedMessage.Builder()
+                .withAttachments(attachments)
+                .build();
+        session.sendMessage(event.getChannel(), preparedMessage);
+    }
+
+    private SlackAttachment generateAttachment(String coin, CmcCurrency cmcCurrency) {
+        if (cmcCurrency == null) {
+            return new SlackAttachment(coin, null, String.format("No currency found with symbol '%s'", coin), null);
         }
         CurrencyPair currencyPair = new CurrencyPair(cmcCurrency.getSymbol(), "USD");
         CmcTicker cmcTicker = getCmcTicker(currencyPair);
         CmcQuote quote = cmcTicker.getQuote().get(currencyPair.counter.getCurrencyCode());
-        SlackAttachment attachment = formatAttachment(cmcCurrency.getSymbol(), cmcTicker, quote);
-        session.sendMessage(channel, attachment.getFallback(), attachment);
+        return formatAttachment(cmcCurrency.getSymbol(), cmcTicker, quote);
+    }
+
+    public List<String> getTickers(String message) {
+        List<String> results = new ArrayList<>();
+        String[] tokens = message.split(" ");
+        for (String t : tokens) {
+            t = t.trim();
+            if (t.startsWith(".") && t.length() >= 2 && t.length() <= 10) {
+                String ticker = t.substring(1).trim();
+                results.add(ticker);
+            }
+        }
+        return results;
     }
 
     private CmcTicker getCmcTicker(CurrencyPair currencyPair) {
@@ -116,7 +142,7 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         attachment.setColor(getColor(quote));
         Optional<String> thumbUrl = new CoinMarketCapIconURLRetriever().retrieve(ticker.getSymbol());
         thumbUrl.ifPresent(attachment::setThumbUrl);
-
+        attachment.addField(formatMessage(ticker, quote), null, false);
         attachment.addField("Binance", formatBinancePrices(baseCurrencyCode), true);
         if (shouldIncludeCoinbase(baseCurrencyCode)) {
             attachment.addField("CoinbasePro", formatCoinbasePrices(baseCurrencyCode), true);
