@@ -29,14 +29,16 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CryptoCurrencyMessageListener implements SlackMessagePostedListener {
     private static final DecimalFormat standardDecimalFormat = new DecimalFormat("#,###.00");
     private static final DecimalFormat lessThanZeroDecimalFormat = new DecimalFormat("0.#####");
+    private static final Integer blackListThreshold = 3;
+
+    private static final HashSet<String> coinBlacklist = new HashSet<String>() {};
+    private static final HashMap<String, Integer> tickerBlacklistThresholdCounts = new HashMap<String, Integer>() {};
 
     private BinanceExchange binanceExchange;
     private CoinbaseProExchange gdaxExchange;
@@ -61,6 +63,7 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         }
         List<SlackAttachment> attachments = new ArrayList<>();
         for (String coin : tickers) {
+            if(isBlacklisted(coin)) continue;
             CmcCurrency cmcCurrency = getCmcCurrency(coin);
             SlackAttachment attachment = generateAttachment(coin, cmcCurrency);
             attachments.add(attachment);
@@ -76,12 +79,32 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
 
     private SlackAttachment generateAttachment(String coin, CmcCurrency cmcCurrency) {
         if (cmcCurrency == null) {
-            return new SlackAttachment(coin, null, String.format("No currency found with symbol '%s'", coin), null);
+            updateBlacklistThresholdCount(coin);
+            if(isBlacklisted(coin)) {
+                return new SlackAttachment(coin, null, String.format("No currency found with symbol '%s. Blacklist threshold met, blacklisting.'", coin), null);
+            }
+            return new SlackAttachment(coin, null, String.format("No currency found with symbol '%s.", coin), null);
         }
         CurrencyPair currencyPair = new CurrencyPair(cmcCurrency.getSymbol(), "USD");
         CmcTicker cmcTicker = getCmcTicker(currencyPair);
         CmcQuote quote = cmcTicker.getQuote().get(currencyPair.counter.getCurrencyCode());
         return formatAttachment(cmcCurrency.getSymbol(), cmcTicker, quote);
+    }
+
+    private boolean isBlacklisted(String coin) {
+        return coinBlacklist.contains(coin);
+    }
+
+    private void updateBlacklistThresholdCount(String coin) {
+        if(tickerBlacklistThresholdCounts.containsKey(coin)) {
+            Integer newCount = tickerBlacklistThresholdCounts.get(coin) + 1;
+            tickerBlacklistThresholdCounts.put(coin, newCount);
+            if (newCount.equals(blackListThreshold)) {
+                coinBlacklist.add(coin);
+            }
+        } else {
+            tickerBlacklistThresholdCounts.put(coin, 1);
+        }
     }
 
     public List<String> getTickers(String message) {
