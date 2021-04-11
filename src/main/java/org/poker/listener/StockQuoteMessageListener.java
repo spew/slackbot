@@ -116,7 +116,11 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
             sb.append(ICUHumanize.compactDecimal(stock.getStats().getMarketCap()));
         }
         sb.append(" | Vol: ");
-        sb.append(ICUHumanize.compactDecimal(quote.getVolume()));
+        if(quote.getVolume() != null) {
+            sb.append(ICUHumanize.compactDecimal(quote.getVolume()));
+        } else {
+            sb.append("Not Available");
+        }
         return sb.toString();
     }
 
@@ -125,7 +129,7 @@ public class StockQuoteMessageListener implements SlackMessagePostedListener {
         return String.format("$%s %s%s (%s%%)",
                 decimalFormat.format(usdPrice),
                 isZeroOrPositive ? "+" : "",
-                decimalFormat.format(changeAmount),
+                decimalFormat.format(changeAmount == null ? 0.00 : changeAmount),
                 decimalFormat.format(percentChange24Hour));
     }
 
