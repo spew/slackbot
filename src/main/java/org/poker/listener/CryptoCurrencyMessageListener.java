@@ -46,11 +46,13 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
 
     private List<CmcCurrency> cmcCurrencies = null;
 
-    public CryptoCurrencyMessageListener(String coinMarketCapApiKey) {
+    public CryptoCurrencyMessageListener(String coinMarketCapApiKey, String binanceApiKey, String binanceSecretKey) {
         ExchangeSpecification coinMarketCapExchangeSpecification = new CmcExchange().getDefaultExchangeSpecification();
         coinMarketCapExchangeSpecification.setApiKey(coinMarketCapApiKey);
         this.coinMarketCapExchange = ExchangeFactory.INSTANCE.createExchange(coinMarketCapExchangeSpecification);
         ExchangeSpecification binanceExchangeSpecification = new BinanceExchange().getDefaultExchangeSpecification();
+        binanceExchangeSpecification.setApiKey(binanceApiKey);
+        binanceExchangeSpecification.setSecretKey(binanceSecretKey);
         binanceExchange = (BinanceExchange) ExchangeFactory.INSTANCE.createExchange(binanceExchangeSpecification);
         gdaxExchange = (CoinbaseProExchange) ExchangeFactory.INSTANCE.createExchange(new CoinbaseProExchange().getDefaultExchangeSpecification());
     }

@@ -32,6 +32,14 @@ public class ApplicationConfiguration {
         return configuration.getString("YOUTUBE_API_KEY", null);
     }
 
+    public String getBinanceApiKey() {
+        return configuration.getString("BINANCE_API_KEY", null);
+    }
+
+    public String getBinanceSecretKey() {
+        return configuration.getString("BINANCE_SECRET_KEY", null);
+    }
+
     public List<String> getChannelNames() {
         List<String> defaultChannels = Arrays.asList(new String[]{"general"});
         return configuration.getList(String.class, "CHANNEL_NAMES", defaultChannels);

@@ -30,7 +30,10 @@ public class DefaultListenerAdder {
 
     private List<SlackMessagePostedListener> createListeners() {
         List<SlackMessagePostedListener> listeners = new ArrayList<>();
-        listeners.add(new CryptoCurrencyMessageListener(applicationConfiguration.getCoinMarketCapApiKey()));
+        listeners.add(new CryptoCurrencyMessageListener(
+                applicationConfiguration.getCoinMarketCapApiKey(),
+                applicationConfiguration.getBinanceApiKey(),
+                applicationConfiguration.getBinanceSecretKey()));
         listeners.add(new StockQuoteMessageListener(new YahooFinanceStockResolver(), new CachingLogoURLRetriever(new GoogleImagesLogoURLRetriever())));
         listeners.add(new VirusMessageListener(new VirusStatsRetriever()));
         listeners.add(new ChessListener());
