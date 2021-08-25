@@ -74,12 +74,12 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
     }
 
     public void onEvent(SlackMessagePosted event, SlackSession session) {
-        //ensureExchanges();
         String message = event.getMessageContent();
         List<String> tickers = getTickers(message);
         if (tickers.isEmpty()) {
             return;
         }
+        ensureExchanges();
         List<SlackAttachment> attachments = new ArrayList<>();
         for (String coin : tickers) {
             if(isBlacklisted(coin)) continue;
