@@ -44,20 +44,37 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
     private CoinbaseProExchange gdaxExchange;
     private Exchange coinMarketCapExchange;
 
+    private String coinMarketCapApiKey;
+    private String binanceApiKey;
+    private String binanceSecretKey;
     private List<CmcCurrency> cmcCurrencies = null;
 
     public CryptoCurrencyMessageListener(String coinMarketCapApiKey, String binanceApiKey, String binanceSecretKey) {
-        ExchangeSpecification coinMarketCapExchangeSpecification = new CmcExchange().getDefaultExchangeSpecification();
-        coinMarketCapExchangeSpecification.setApiKey(coinMarketCapApiKey);
-        this.coinMarketCapExchange = ExchangeFactory.INSTANCE.createExchange(coinMarketCapExchangeSpecification);
-        ExchangeSpecification binanceExchangeSpecification = new BinanceExchange().getDefaultExchangeSpecification();
-        binanceExchangeSpecification.setApiKey(binanceApiKey);
-        binanceExchangeSpecification.setSecretKey(binanceSecretKey);
-        binanceExchange = (BinanceExchange) ExchangeFactory.INSTANCE.createExchange(binanceExchangeSpecification);
-        gdaxExchange = (CoinbaseProExchange) ExchangeFactory.INSTANCE.createExchange(new CoinbaseProExchange().getDefaultExchangeSpecification());
+        this.coinMarketCapApiKey = coinMarketCapApiKey;
+        this.binanceApiKey = binanceApiKey;
+        this.binanceSecretKey = binanceSecretKey;
+    }
+
+    private synchronized void ensureExchanges() {
+        // it is a little dangerous to make web requests inside a synchronized method -- should improve that
+        if (coinMarketCapExchange == null) {
+            ExchangeSpecification coinMarketCapExchangeSpecification = new CmcExchange().getDefaultExchangeSpecification();
+            coinMarketCapExchangeSpecification.setApiKey(coinMarketCapApiKey);
+            coinMarketCapExchange = ExchangeFactory.INSTANCE.createExchange(coinMarketCapExchangeSpecification);
+        }
+        if (binanceExchange == null) {
+            ExchangeSpecification binanceExchangeSpecification = new BinanceExchange().getDefaultExchangeSpecification();
+            binanceExchangeSpecification.setApiKey(binanceApiKey);
+            binanceExchangeSpecification.setSecretKey(binanceSecretKey);
+            binanceExchange = (BinanceExchange) ExchangeFactory.INSTANCE.createExchange(binanceExchangeSpecification);
+        }
+        if (gdaxExchange == null) {
+            gdaxExchange = (CoinbaseProExchange) ExchangeFactory.INSTANCE.createExchange(new CoinbaseProExchange().getDefaultExchangeSpecification());
+        }
     }
 
     public void onEvent(SlackMessagePosted event, SlackSession session) {
+        ensureExchanges();
         String message = event.getMessageContent();
         List<String> tickers = getTickers(message);
         if (tickers.isEmpty()) {
