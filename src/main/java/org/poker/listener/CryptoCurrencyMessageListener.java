@@ -64,8 +64,8 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         }
         if (binanceExchange == null) {
             ExchangeSpecification binanceExchangeSpecification = new BinanceExchange().getDefaultExchangeSpecification();
-            binanceExchangeSpecification.setApiKey(binanceApiKey);
-            binanceExchangeSpecification.setSecretKey(binanceSecretKey);
+            // temporary workaround until we upgrade xchange versions
+            binanceExchangeSpecification.setExchangeSpecificParametersItem(BinanceExchange.SPECIFIC_PARAM_USE_SANDBOX, true);
             binanceExchange = (BinanceExchange) ExchangeFactory.INSTANCE.createExchange(binanceExchangeSpecification);
         }
         if (gdaxExchange == null) {
