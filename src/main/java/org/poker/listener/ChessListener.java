@@ -47,9 +47,9 @@ public class ChessListener implements SlackMessagePostedListener {
             Stats stats = playerToStats.get(p);
             attachments.add(formatProfileAttachment(p, stats));
         }
-        SlackPreparedMessage preparedMessage = new SlackPreparedMessage.Builder()
-                .withMessage("Chess Ratings")
-                .withAttachments(attachments)
+        SlackPreparedMessage preparedMessage = SlackPreparedMessage.builder()
+                .message("Chess Ratings")
+                .attachments(attachments)
                 .build();
         return preparedMessage;
     }

@@ -66,9 +66,9 @@ public class VirusMessageListener implements SlackMessagePostedListener {
         addField(attachment, "US Deaths", curUSStats.getDeaths(), curUSStats.getDeathsDelta(),
                 calcPercentageDifference(curUSStats.getDeaths(), curUSStats.getDeaths() - curUSStats.getDeathsDelta()));
         attachments.add(attachment);
-        SlackPreparedMessage preparedMessage = new SlackPreparedMessage.Builder()
-                .withMessage("Relative to yesterday:")
-                .withAttachments(attachments)
+        SlackPreparedMessage preparedMessage = SlackPreparedMessage.builder()
+                .message("Relative to yesterday:")
+                .attachments(attachments)
                 .build();
         return preparedMessage;
     }

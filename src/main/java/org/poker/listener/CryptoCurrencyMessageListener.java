@@ -90,8 +90,8 @@ public class CryptoCurrencyMessageListener implements SlackMessagePostedListener
         if (attachments.isEmpty()) {
             return;
         }
-        SlackPreparedMessage preparedMessage = new SlackPreparedMessage.Builder()
-                .withAttachments(attachments)
+        SlackPreparedMessage preparedMessage = SlackPreparedMessage.builder()
+                .attachments(attachments)
                 .build();
         session.sendMessage(event.getChannel(), preparedMessage);
     }

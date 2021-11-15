@@ -43,4 +43,10 @@ public class StockQuoteRequestParserTest {
         List<String> tickers = new StockQuoteRequestParser().getTickers("$FOOD");
         assertEquals(Arrays.asList("CMG", "DPZ", "MCD", "NDLS", "YUM"), tickers);
     }
+
+    @Test
+    public void VEGAS() {
+        List<String> tickers = new StockQuoteRequestParser().getTickers("$VEGAS");
+        assertEquals(Arrays.asList("LVS", "MGM", "WYNN"), tickers);
+    }
 }

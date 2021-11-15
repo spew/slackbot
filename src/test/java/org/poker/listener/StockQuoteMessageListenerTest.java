@@ -1,6 +1,7 @@
 package org.poker.listener;
 
 import com.ullink.slack.simpleslackapi.SlackAttachment;
+import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.SlackPreparedMessage;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
@@ -46,7 +47,7 @@ public class StockQuoteMessageListenerTest {
         SlackSession session = mock(SlackSession.class);
         listener.onEvent(event, session);
         ArgumentCaptor<SlackPreparedMessage> argumentCaptor = ArgumentCaptor.forClass(SlackPreparedMessage.class);
-        verify(session, times(1)).sendMessage(any(), argumentCaptor.capture());
+        verify(session, times(1)).sendMessage(any(SlackChannel.class), argumentCaptor.capture());
         SlackPreparedMessage actualMessage = argumentCaptor.getValue();
         List<SlackAttachment> attachments = new ArrayList<>();
         for (String t : expectedTitles) {
@@ -59,9 +60,9 @@ public class StockQuoteMessageListenerTest {
 
     private void assertSlackPreparedMessage(List<SlackAttachment> expectedAttachments, SlackPreparedMessage actualMessage) {
         assertNotNull(actualMessage.getAttachments());
-        assertEquals(actualMessage.getAttachments().length, expectedAttachments.size());
-        for (int i = 0; i < actualMessage.getAttachments().length; i++) {
-            assertTickerAttachment(expectedAttachments.get(i), actualMessage.getAttachments()[i]);
+        assertEquals(actualMessage.getAttachments().size(), expectedAttachments.size());
+        for (int i = 0; i < actualMessage.getAttachments().size(); i++) {
+            assertTickerAttachment(expectedAttachments.get(i), actualMessage.getAttachments().get(i));
         }
     }
 

@@ -19,6 +19,8 @@ public class StockQuoteRequestParser {
     private static final List<String> FOOD_TICKER_LIST = Arrays.asList("CMG", "DPZ", "MCD", "NDLS", "YUM");
     private static final String DUNG_TICKER = "DUNG";
     private static final List<String> DUNG_TICKER_LIST = Arrays.asList("DASH", "UBER", "NIO", "GME");
+    private static final String VEGAS_TICKER = "VEGAS";
+    private static final List<String> VEGAS_TICKER_LIST = Arrays.asList("LVS", "MGM", "WYNN");
 
     public List<String> getTickers(String message) {
         List<String> results = new ArrayList<>();
@@ -47,6 +49,8 @@ public class StockQuoteRequestParser {
                 return FOOD_TICKER_LIST;
             case DUNG_TICKER:
                 return DUNG_TICKER_LIST;
+            case VEGAS_TICKER:
+                return VEGAS_TICKER_LIST;
             default:
                 return Arrays.asList(ticker);
         }
