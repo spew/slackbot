@@ -23,7 +23,7 @@
     <log4j.version>2.13.3</log4j.version>
     <mockito.version>2.13.0</mockito.version>
     <resilience4j.version>1.3.1</resilience4j.version>
-    <simpleslackapi.version>1.2.0</simpleslackapi.version>
+    <simpleslackapi.version>1.3.0</simpleslackapi.version>
     <slf4j.version>1.7.30</slf4j.version>
     <xchange.version>5.0.10</xchange.version>
     <yahoofinance.version>3.12.3</yahoofinance.version>
