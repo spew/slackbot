@@ -21,17 +21,17 @@ import java.util.Optional;
 public class GoogleImagesLogoURLRetriever implements LogoURLRetriever {
     private static final Logger logger = LogManager.getLogger(GoogleImagesLogoURLRetriever.class);
     private static final double MIN_RATIO = 1.59d;
-    private static final int MAX_IMAGES = 10;
+    private static final int MAX_IMAGES = 100;
     private static final int LOGO_URL_TIMEOUT = 200;
 
     @Override
     public Optional<String> retrieve(String companyName) {
-        String userAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36";
+        String userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36";
 
         try {
             String url = formatUrl(companyName);
             Document doc = Jsoup.connect(url).userAgent(userAgent).referrer("https://www.google.com/").get();
-            Elements elements = doc.select("div.rg_meta");
+            Elements elements = doc.select("a.wXeWr.islib.nfEiy");
             return parseElements(elements);
         } catch (IOException e) {
             logger.warn("error trying to retrieve logo", e);
@@ -59,6 +59,10 @@ public class GoogleImagesLogoURLRetriever implements LogoURLRetriever {
     }
 
     private Optional<String> parseElement(Element element) {
+        String hrefAttribute = element.attr("href");
+        if (hrefAttribute.isEmpty()) {
+            return Optional.empty();
+        }
         if (element.childNodeSize() > 0) {
             JSONObject jsonObject = new JSONObject(element.childNode(0).toString());
             String resultUrl = extractUrl(jsonObject);
