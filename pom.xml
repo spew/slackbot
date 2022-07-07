@@ -9,7 +9,7 @@
   <name>slackbot</name>
 
   <properties>
-    <commons-configuration2.version>2.7</commons-configuration2.version>
+    <commons-configuration2.version>2.8.0</commons-configuration2.version>
     <google-api-services-youtube.version>v3-rev202-1.18.0-rc</google-api-services-youtube.version>
     <google-http-client-jackson2.version>1.23.0</google-http-client-jackson2.version>
     <hamcrest-core.version>1.3</hamcrest-core.version>
